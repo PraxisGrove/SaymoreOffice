@@ -2,9 +2,12 @@
 
 import {
   BookOpen,
+  Bot,
   Check,
+  GitPullRequest,
   History,
   Home,
+  MessageCircle,
   Mic,
   Pause,
   Play,
@@ -23,6 +26,7 @@ import { demoScenarios } from "@/data/site";
 const LAST_STEP = 5;
 const STEP_DELAYS = [0, 3200, 5200, 2200, 3000, 3200];
 const stageLabels = ["准备就绪", "开始说话", "转写与精炼", "写入光标", "Saymore"];
+type DemoScenario = (typeof demoScenarios)[number];
 const waveformBars = [
   { id: "one", amplitude: 0.38 },
   { id: "two", amplitude: 0.56 },
@@ -37,16 +41,16 @@ const waveformBars = [
 
 export function HeroDemo() {
   const [scenarioIndex, setScenarioIndex] = useState(0);
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(2);
   const [playing, setPlaying] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const shellRef = useRef<HTMLElement>(null);
   const audioContext = useRef<AudioContext | null>(null);
-  const speechRun = useRef(0);
+  const voiceAudio = useRef<HTMLAudioElement | null>(null);
   const scenario = demoScenarios[scenarioIndex];
 
   const ensureAudio = useCallback(() => {
-    if (!audioContext.current) audioContext.current = new AudioContext();
+    if (!audioContext.current || audioContext.current.state === "closed") audioContext.current = new AudioContext();
     if (audioContext.current.state === "suspended") void audioContext.current.resume();
   }, []);
 
@@ -57,53 +61,57 @@ export function HeroDemo() {
       const context = audioContext.current;
       if (!context) return;
 
-      const oscillator = context.createOscillator();
-      const gain = context.createGain();
-      oscillator.type = "sine";
-      oscillator.frequency.value = frequency;
-      gain.gain.setValueAtTime(0.0001, context.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.035, context.currentTime + 0.012);
-      gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + duration);
-      oscillator.connect(gain).connect(context.destination);
-      oscillator.start();
-      oscillator.stop(context.currentTime + duration + 0.02);
+      const master = context.createGain();
+      const filter = context.createBiquadFilter();
+      master.gain.setValueAtTime(0.0001, context.currentTime);
+      master.gain.exponentialRampToValueAtTime(0.026, context.currentTime + 0.018);
+      master.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + duration);
+      filter.type = "lowpass";
+      filter.frequency.value = 1800;
+      master.connect(filter).connect(context.destination);
+
+      [
+        { ratio: 1, type: "sine" as OscillatorType },
+        { ratio: 1.5, type: "triangle" as OscillatorType },
+      ].forEach(({ ratio, type }, index) => {
+        const oscillator = context.createOscillator();
+        const voiceGain = context.createGain();
+        oscillator.type = type;
+        oscillator.frequency.value = frequency * ratio;
+        voiceGain.gain.value = index === 0 ? 0.82 : 0.18;
+        oscillator.connect(voiceGain).connect(master);
+        oscillator.start();
+        oscillator.stop(context.currentTime + duration + 0.02);
+      });
     },
     [ensureAudio, soundEnabled],
   );
 
-  const speak = useCallback(
-    (text: string, onDone?: () => void) => {
-      if (!soundEnabled || !("speechSynthesis" in window)) return;
+  const stopVoice = useCallback(() => {
+    if (!voiceAudio.current) return;
+    voiceAudio.current.pause();
+    voiceAudio.current.removeAttribute("src");
+    voiceAudio.current.load();
+    voiceAudio.current = null;
+  }, []);
 
-      const qualityHints = ["natural", "premium", "enhanced", "xiaoxiao", "tingting", "meijia", "普通话"];
-      const voices = window.speechSynthesis
-        .getVoices()
-        .filter((voice) => voice.lang.toLowerCase().startsWith("zh") && !voice.name.toLowerCase().includes("compact"))
-        .sort((left, right) => {
-          const score = (name: string) =>
-            qualityHints.reduce(
-              (total, hint, index) => total + (name.toLowerCase().includes(hint) ? 20 - index : 0),
-              0,
-            );
-          return score(right.name) - score(left.name);
-        });
-
-      const run = ++speechRun.current;
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      if (voices[0]) utterance.voice = voices[0];
-      utterance.lang = "zh-CN";
-      utterance.rate = 1.85;
-      utterance.pitch = 1.02;
-      utterance.volume = 0.68;
+  const playVoice = useCallback(
+    (src: string, onDone?: () => void) => {
+      stopVoice();
+      const audio = new Audio(src);
+      voiceAudio.current = audio;
+      audio.preload = "auto";
+      audio.volume = 0.86;
       const finish = () => {
-        if (speechRun.current === run) onDone?.();
+        if (voiceAudio.current !== audio) return;
+        voiceAudio.current = null;
+        onDone?.();
       };
-      utterance.onend = finish;
-      utterance.onerror = finish;
-      window.speechSynthesis.speak(utterance);
+      audio.addEventListener("ended", finish, { once: true });
+      audio.addEventListener("error", finish, { once: true });
+      void audio.play().catch(finish);
     },
-    [soundEnabled],
+    [stopVoice],
   );
 
   const finishSpokenScene = useCallback(() => {
@@ -120,7 +128,7 @@ export function HeroDemo() {
 
     const timer = window.setTimeout(() => {
       if (step === LAST_STEP) {
-        window.speechSynthesis?.cancel();
+        stopVoice();
         setScenarioIndex((current) => (current + 1) % demoScenarios.length);
         setStep(1);
         return;
@@ -138,11 +146,12 @@ export function HeroDemo() {
     }, STEP_DELAYS[step]);
 
     return () => window.clearTimeout(timer);
-  }, [playTone, playing, soundEnabled, step]);
+  }, [playTone, playing, soundEnabled, step, stopVoice]);
 
   useEffect(() => {
-    if (step === 2 && soundEnabled && playing) speak(scenario.raw, finishSpokenScene);
-  }, [finishSpokenScene, playing, scenario.raw, soundEnabled, speak, step]);
+    if (step !== 2 || !soundEnabled || !playing || (voiceAudio.current && !voiceAudio.current.paused)) return;
+    playVoice(scenario.audioSrc, finishSpokenScene);
+  }, [finishSpokenScene, playVoice, playing, scenario.audioSrc, soundEnabled, step]);
 
   useEffect(() => {
     let frame = 0;
@@ -174,23 +183,22 @@ export function HeroDemo() {
 
   useEffect(() => {
     return () => {
-      speechRun.current += 1;
-      window.speechSynthesis?.cancel();
-      void audioContext.current?.close();
+      stopVoice();
+      const context = audioContext.current;
+      audioContext.current = null;
+      if (context && context.state !== "closed") void context.close();
     };
-  }, []);
+  }, [stopVoice]);
 
   const togglePlayback = () => {
     if (playing) {
-      speechRun.current += 1;
-      window.speechSynthesis?.cancel();
+      stopVoice();
     }
     setPlaying((current) => !current);
   };
 
   const replay = () => {
-    speechRun.current += 1;
-    window.speechSynthesis?.cancel();
+    stopVoice();
     setStep(1);
     setPlaying(true);
     playTone(420, 0.08);
@@ -198,13 +206,22 @@ export function HeroDemo() {
 
   const toggleSound = () => {
     if (soundEnabled) {
-      speechRun.current += 1;
-      window.speechSynthesis?.cancel();
+      stopVoice();
       setSoundEnabled(false);
       return;
     }
     ensureAudio();
     setSoundEnabled(true);
+    setPlaying(true);
+    setStep(2);
+    playVoice(scenario.audioSrc, finishSpokenScene);
+  };
+
+  const selectScenario = (index: number) => {
+    stopVoice();
+    setScenarioIndex(index);
+    setStep(2);
+    setPlaying(true);
   };
 
   return (
@@ -242,10 +259,25 @@ export function HeroDemo() {
                   </button>
                 </div>
 
+                <div className="scenario-switcher" role="tablist" aria-label="选择语音输入场景">
+                  {demoScenarios.map((item, index) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={scenarioIndex === index}
+                      className={scenarioIndex === index ? "is-selected" : ""}
+                      onClick={() => selectScenario(index)}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+
                 {step === 1 ? (
-                  <ProductHome />
+                  <ProductPreview view={scenario.productView} />
                 ) : step <= 4 ? (
-                  <MemoScene step={step} raw={scenario.raw} refined={scenario.refined} />
+                  <AppScene step={step} scenario={scenario} />
                 ) : (
                   <BrandOutro />
                 )}
@@ -268,13 +300,13 @@ export function HeroDemo() {
   );
 }
 
-function ProductHome() {
+function ProductPreview({ view }: { view: DemoScenario["productView"] }) {
   const nav = [
-    { label: "首页", icon: Home },
-    { label: "模型", icon: Sparkles },
-    { label: "历史", icon: History },
-    { label: "词典", icon: BookOpen },
-    { label: "设置", icon: Settings },
+    { id: "home", label: "首页", icon: Home },
+    { id: "models", label: "模型", icon: Sparkles },
+    { id: "history", label: "历史", icon: History },
+    { id: "dictionary", label: "词典", icon: BookOpen },
+    { id: "settings", label: "设置", icon: Settings },
   ];
 
   return (
@@ -290,8 +322,8 @@ function ProductHome() {
           <strong>Saymore</strong>
         </div>
         <nav aria-label="Saymore 应用导航">
-          {nav.map(({ label, icon: Icon }, index) => (
-            <span key={label} className={index === 0 ? "is-current" : ""}>
+          {nav.map(({ id, label, icon: Icon }) => (
+            <span key={label} className={id === view ? "is-current" : ""}>
               <Icon size={15} />
               {label}
             </span>
@@ -305,78 +337,390 @@ function ProductHome() {
         <small>本地优先 · 隐私保护</small>
       </aside>
       <main className="product-main">
-        <h3>解放双手，说出所想</h3>
-        <div className="product-top-cards">
-          <section className="shortcut-panel">
-            <header>
-              <WaveMark />
-              <strong>语音输入快捷键</strong>
-              <span>已启用</span>
-            </header>
-            <kbd>Right Command</kbd>
-            <footer>
-              <span>按一下开始，再按一下结束</span>
-              <b>修改 ›</b>
-            </footer>
-          </section>
-          <section className="status-panel">
-            <header>
-              <strong>配置状态</strong>
-              <span>
-                <i />
-                全部正常
-              </span>
-            </header>
-            <p>语音链路运行正常</p>
-            <div>
-              <span>
-                <Sparkles size={15} />
-                模型服务
-              </span>
-              <span>
-                <Mic size={15} />
-                麦克风
-              </span>
-              <span>
-                <Send size={15} />
-                文本投递
-              </span>
+        {view === "home" ? (
+          <>
+            <h3>解放双手，说出所想</h3>
+            <div className="product-top-cards">
+              <section className="shortcut-panel">
+                <header>
+                  <WaveMark />
+                  <strong>语音输入快捷键</strong>
+                  <span>已启用</span>
+                </header>
+                <kbd>Right Command</kbd>
+                <footer>
+                  <span>按一下开始，再按一下结束</span>
+                  <b>修改 ›</b>
+                </footer>
+              </section>
+              <section className="status-panel">
+                <header>
+                  <strong>配置状态</strong>
+                  <span>
+                    <i />
+                    全部正常
+                  </span>
+                </header>
+                <p>语音链路运行正常</p>
+                <div>
+                  <span>
+                    <Sparkles size={15} />
+                    模型服务
+                  </span>
+                  <span>
+                    <Mic size={15} />
+                    麦克风
+                  </span>
+                  <span>
+                    <Send size={15} />
+                    文本投递
+                  </span>
+                </div>
+              </section>
             </div>
-          </section>
-        </div>
-        <section className="usage-panel">
-          <header>
-            <strong>使用概览</strong>
-            <span>累计数据</span>
-          </header>
-          <div className="usage-metrics">
-            <span>
-              <b>52</b>
-              <i>分钟</i>
-              <small>语音输入时长</small>
-            </span>
-            <span>
-              <b>6,240</b>
-              <i>字</i>
-              <small>输入字数</small>
-            </span>
-            <span>
-              <b>172</b>
-              <i>字/分钟</i>
-              <small>平均速度</small>
-            </span>
-          </div>
-          <div className="usage-bars" aria-hidden="true">
-            {[24, 42, 59, 75, 48, 86, 33].map((height, index) => (
-              <i
-                key={height}
-                className={index === 5 ? "is-today" : ""}
-                style={{ "--bar-height": `${height}%` } as React.CSSProperties}
-              />
-            ))}
-          </div>
-        </section>
+            <section className="usage-panel">
+              <header>
+                <strong>使用概览</strong>
+                <span>演示数据</span>
+              </header>
+              <div className="usage-metrics">
+                <span>
+                  <b>52</b>
+                  <i>分钟</i>
+                  <small>语音输入时长</small>
+                </span>
+                <span>
+                  <b>6,240</b>
+                  <i>字</i>
+                  <small>输入字数</small>
+                </span>
+                <span>
+                  <b>172</b>
+                  <i>字/分钟</i>
+                  <small>平均速度</small>
+                </span>
+              </div>
+              <div className="usage-bars" aria-hidden="true">
+                {[24, 42, 59, 75, 48, 86, 33].map((height, index) => (
+                  <i
+                    key={height}
+                    className={index === 5 ? "is-today" : ""}
+                    style={{ "--bar-height": `${height}%` } as React.CSSProperties}
+                  />
+                ))}
+              </div>
+            </section>
+          </>
+        ) : (
+          <ProductDetailView view={view} />
+        )}
       </main>
+    </div>
+  );
+}
+
+function ProductDetailView({ view }: { view: Exclude<DemoScenario["productView"], "home"> }) {
+  if (view === "models") {
+    return (
+      <div className="product-detail product-detail--models">
+        <header>
+          <div>
+            <span>语音识别</span>
+            <h3>模型</h3>
+          </div>
+          <button type="button">检查更新</button>
+        </header>
+        <section className="featured-model">
+          <span className="model-mark">
+            <Sparkles size={18} />
+          </span>
+          <div>
+            <strong>Paraformer Q8</strong>
+            <p>中文与中英混合输入 · 候选模型</p>
+          </div>
+          <b>评估中</b>
+        </section>
+        <div className="model-list">
+          {[
+            ["Qwen3-ASR", "高精度识别候选", "待验证"],
+            ["SenseVoice Small", "多语言识别候选", "待验证"],
+            ["Whisper Turbo", "通用识别对照", "待验证"],
+          ].map(([name, meta, state]) => (
+            <article key={name}>
+              <span>
+                <Mic size={14} />
+              </span>
+              <div>
+                <strong>{name}</strong>
+                <small>{meta}</small>
+              </div>
+              <b>{state}</b>
+            </article>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (view === "history") {
+    return (
+      <div className="product-detail product-detail--history">
+        <header>
+          <div>
+            <span>仅保存在这台设备</span>
+            <h3>输入历史</h3>
+          </div>
+          <button type="button">演示数据</button>
+        </header>
+        <div className="history-summary">
+          <span>
+            <b>18</b>
+            <small>次听写</small>
+          </span>
+          <span>
+            <b>2,486</b>
+            <small>输入字数</small>
+          </span>
+          <span>
+            <b>176</b>
+            <small>字 / 分钟</small>
+          </span>
+        </div>
+        <div className="history-list">
+          {[
+            ["10:26", "GitHub Issue", "修复模型下载中断后，重新打开应用无法继续下载的问题。"],
+            ["09:48", "团队消息", "Paraformer Q8 模型体积减少约 72%，峰值内存减少约 49%。"],
+            ["09:12", "备忘录", "将发布时间调整到周四，并补充 Windows 回归测试。"],
+          ].map(([time, app, text]) => (
+            <article key={time}>
+              <time>{time}</time>
+              <div>
+                <strong>{app}</strong>
+                <p>{text}</p>
+              </div>
+              <span>已写入</span>
+            </article>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="product-detail product-detail--dictionary">
+      <header>
+        <div>
+          <span>统一正式写法</span>
+          <h3>个人词典</h3>
+        </div>
+        <button type="button">添加词语</button>
+      </header>
+      <div className="dictionary-search">搜索词语或别名</div>
+      <div className="dictionary-table">
+        <header>
+          <span>听到</span>
+          <span>写成</span>
+          <span>来源</span>
+        </header>
+        {[
+          ["say more", "Saymore", "自动学习"],
+          ["qwen three asr", "Qwen3-ASR", "手动添加"],
+          ["api key", "API Key", "CSV 导入"],
+          ["para former", "Paraformer", "自动学习"],
+        ].map(([heard, written, source]) => (
+          <div key={heard}>
+            <span>{heard}</span>
+            <strong>{written}</strong>
+            <small>{source}</small>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AppScene({ step, scenario }: { step: number; scenario: DemoScenario }) {
+  if (scenario.surface === "chat") return <ChatScene step={step} raw={scenario.raw} refined={scenario.refined} />;
+  if (scenario.surface === "ai") return <AiScene step={step} raw={scenario.raw} refined={scenario.refined} />;
+  if (scenario.surface === "issue") return <IssueScene step={step} raw={scenario.raw} refined={scenario.refined} />;
+  return <MemoScene step={step} raw={scenario.raw} refined={scenario.refined} />;
+}
+
+function SceneTitlebar({ icon: Icon, title, meta }: { icon: typeof Home; title: string; meta: string }) {
+  return (
+    <header className="scene-titlebar">
+      <span className="window-lights" aria-hidden="true">
+        <i />
+        <i />
+        <i />
+      </span>
+      <span className="scene-app-name">
+        <Icon size={13} />
+        <strong>{title}</strong>
+      </span>
+      <span>{meta}</span>
+    </header>
+  );
+}
+
+function SceneTranscript({ raw }: { raw: string }) {
+  return (
+    <div className="scene-transcript">
+      <span>正在整理你的原话</span>
+      <p>{raw}</p>
+    </div>
+  );
+}
+
+function InputCaret() {
+  return <span className="input-caret" aria-hidden="true" />;
+}
+
+function SceneRecorder({ step }: { step: number }) {
+  return <RecordingCapsule mode={step === 2 ? "recording" : step === 3 ? "processing" : "delivered"} />;
+}
+
+function ChatScene({ step, raw, refined }: { step: number; raw: string; refined: string }) {
+  return (
+    <div className="target-app chat-app" aria-live="polite">
+      <SceneTitlebar icon={MessageCircle} title="微信" meta="在线" />
+      <aside className="chat-list">
+        <div className="chat-search">搜索</div>
+        {[
+          ["S", "Saymore 项目群", "Q8 测试结果已更新"],
+          ["模", "模型讨论", "峰值内存数据"],
+          ["设", "设计评审", "新的听写状态"],
+        ].map(([avatar, name, message], index) => (
+          <article key={name} className={index === 0 ? "is-active" : ""}>
+            <b>{avatar}</b>
+            <div>
+              <strong>{name}</strong>
+              <span>{message}</span>
+            </div>
+          </article>
+        ))}
+      </aside>
+      <main className="chat-conversation">
+        <header>
+          <strong>Saymore 项目群</strong>
+          <span>4 位成员</span>
+        </header>
+        <div className="chat-thread">
+          <div className="chat-message chat-message--received">
+            <b>周</b>
+            <p>Q8 的体积和内存数据已经跑完了，麻烦同步一下结论。</p>
+          </div>
+        </div>
+        {step === 3 && <SceneTranscript raw={raw} />}
+        <div className={`chat-composer ${step === 4 ? "has-copy" : ""}`}>
+          <p>
+            {step === 4 ? (
+              <>
+                {refined}
+                <InputCaret />
+              </>
+            ) : (
+              <>
+                <InputCaret />
+                在这里输入消息
+              </>
+            )}
+          </p>
+          {step === 4 && <span>文字已写入，等待你确认发送</span>}
+        </div>
+      </main>
+      <SceneRecorder step={step} />
+    </div>
+  );
+}
+
+function AiScene({ step, raw, refined }: { step: number; raw: string; refined: string }) {
+  return (
+    <div className="target-app ai-app" aria-live="polite">
+      <SceneTitlebar icon={Bot} title="代码代理" meta="Saymore workspace" />
+      <aside className="ai-sidebar">
+        <button type="button">新建任务</button>
+        <span>今天</span>
+        <p>修复下载中断</p>
+        <p>检查模型测试</p>
+        <span>昨天</span>
+        <p>起草回归清单</p>
+      </aside>
+      <main className="ai-workspace">
+        <div className="ai-empty">
+          <span>
+            <Bot size={20} />
+          </span>
+          <strong>把一个完整任务交给 AI</strong>
+          <p>代码代理已连接 Saymore 项目；Saymore 只负责写入指令，发送前仍由你确认。</p>
+        </div>
+        {step === 3 && <SceneTranscript raw={raw} />}
+        <div className={`ai-prompt ${step === 4 ? "has-copy" : ""}`}>
+          <p>
+            {step === 4 ? (
+              <>
+                {refined}
+                <InputCaret />
+              </>
+            ) : (
+              <>
+                <InputCaret />
+                在这里描述任务…
+              </>
+            )}
+          </p>
+          <footer>
+            <span>{step === 4 ? "已写入 · 等待确认" : "支持多行 Prompt"}</span>
+            <b>↑</b>
+          </footer>
+        </div>
+      </main>
+      <SceneRecorder step={step} />
+    </div>
+  );
+}
+
+function IssueScene({ step, raw, refined }: { step: number; raw: string; refined: string }) {
+  return (
+    <div className="target-app issue-app" aria-live="polite">
+      <SceneTitlebar icon={GitPullRequest} title="GitHub" meta="New issue" />
+      <aside className="issue-sidebar">
+        <strong>PraxisGrove / Saymore</strong>
+        <span>Code</span>
+        <span className="is-active">
+          Issues <b>12</b>
+        </span>
+        <span>Pull requests</span>
+        <span>Actions</span>
+      </aside>
+      <main className="issue-editor">
+        <header>
+          <span>Issues</span>
+          <b>New issue</b>
+        </header>
+        <span className="issue-label">标题</span>
+        <div className="issue-title">模型下载中断后无法继续</div>
+        <span className="issue-label">描述</span>
+        <div className={`issue-body ${step === 4 ? "has-copy" : ""}`}>
+          {step === 4 ? (
+            <>
+              {refined}
+              <InputCaret />
+            </>
+          ) : (
+            <>
+              <InputCaret />
+              在这里描述问题、复现步骤和预期结果。
+            </>
+          )}
+        </div>
+        {step === 3 && <SceneTranscript raw={raw} />}
+        <footer>
+          <span>由你确认后创建</span>
+          <button type="button">Create issue</button>
+        </footer>
+      </main>
+      <SceneRecorder step={step} />
     </div>
   );
 }
@@ -406,10 +750,13 @@ function MemoScene({ step, raw, refined }: { step: number; raw: string; refined:
         {step === 4 ? (
           <p className="memo-result">
             {refined}
-            <i />
+            <InputCaret />
           </p>
         ) : (
-          <p className="memo-placeholder">把光标放在这里，然后按下 Right Command 开始说话。</p>
+          <p className="memo-placeholder">
+            <InputCaret />
+            把光标放在这里，然后按下 Right Command 开始说话。
+          </p>
         )}
         {step === 3 && (
           <div className="transcript-preview">

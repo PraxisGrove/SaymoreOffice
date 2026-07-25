@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Saymore - Speak naturally. Type anywhere.";
+export const alt = "Saymore - Local-first voice input for everyday desktop writing.";
 export const size = {
   width: 1200,
   height: 630,
@@ -94,10 +94,10 @@ export default function OpenGraphImage() {
               }}
             >
               <span style={{ display: "flex" }}>Speak naturally.</span>
-              <span style={{ display: "flex" }}>Type anywhere.</span>
+              <span style={{ display: "flex" }}>Dictate where you write.</span>
             </div>
             <div style={{ display: "flex", fontSize: "24px", lineHeight: 1.4, color: "#575b57" }}>
-              Local-first voice input for every app.
+              Local-first voice input for everyday desktop writing.
             </div>
           </div>
 

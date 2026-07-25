@@ -49,39 +49,46 @@ export default async function HomePage() {
             <span>Rust + Slint</span>
             <span>PolyForm Shield</span>
           </div>
+          <div className="overview-actions">
+            <DownloadButton inverse />
+            <a href={releaseUrl} target="_blank" rel="noreferrer">
+              查看版本说明
+              <ArrowRight size={15} />
+            </a>
+          </div>
         </div>
       </section>
 
       <section id="features" className="section section--white">
         <div className="page-width">
           <div className="section-heading split-heading">
-            <h2>更快，但速度必须可以被验证。</h2>
+            <h2>用本机记录，了解自己的真实输入速度。</h2>
             <p>
-              Saymore 在本机记录真实的输入字符数、听写时长和平均速度。官网不沿用竞品的“快 4
-              倍”口号，生产数据达标后再公开对比。
+              Saymore
+              在本机记录输入字符数、听写时长和平均速度。公开对比将在生产数据达到统计要求后发布，并同时说明样本、口径与测量方法。
             </p>
           </div>
           <div className="speed-board">
             <div className="speed-live">
               <Zap size={22} />
-              <span>你的真实速度</span>
-              <strong>随使用记录</strong>
-              <p>字符 / 分钟、总听写时间与近 7 天趋势都保存在本地。</p>
+              <span>本机使用数据</span>
+              <strong>随使用逐步积累</strong>
+              <p>输入字符数、听写时长、字符 / 分钟与近 7 天趋势都保存在本机。</p>
             </div>
-            <section className="benchmark-table" aria-label="Paraformer 开发基准摘要">
+            <section className="benchmark-table" aria-label="公开速度对比计划">
               <div>
-                <span>开发基准</span>
-                <strong>Paraformer Q8</strong>
+                <span>公开对比</span>
+                <strong>等待生产数据</strong>
               </div>
               <div>
-                <span>模型体积</span>
-                <strong>减少约 72%</strong>
+                <span>发布条件</span>
+                <strong>统计要求达标</strong>
               </div>
               <div>
-                <span>峰值内存</span>
-                <strong>减少约 49%</strong>
+                <span>同步公开</span>
+                <strong>样本、口径与方法</strong>
               </div>
-              <p>来自固定开发基准，不代表生产版本的速度承诺。</p>
+              <p>在数据达标前，官网不会展示“快 4 倍”等未经验证的结论。</p>
             </section>
           </div>
         </div>
@@ -226,7 +233,7 @@ export default async function HomePage() {
       <section className="section section--white platform-section">
         <div className="page-width">
           <div className="section-heading platform-heading">
-            <h2>光标在哪里，Saymore 就在哪里输入。</h2>
+            <h2>在兼容的文本输入场景中，把听写结果写到光标位置。</h2>
             <p>具体应用兼容性会通过发布测试矩阵逐项确认；核心目标覆盖桌面常见文本输入场景。</p>
           </div>
           <div className="platform-list">

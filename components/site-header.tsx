@@ -1,9 +1,10 @@
 "use client";
 
-import { GitFork, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { githubUrl, navItems } from "@/data/site";
+import { DownloadButton } from "@/components/download-button";
+import { navItems } from "@/data/site";
 
 export function SiteHeader() {
   const [pastHero, setPastHero] = useState(false);
@@ -43,10 +44,9 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <a className="header-github" href={githubUrl} target="_blank" rel="noreferrer">
-          <GitFork size={17} aria-hidden="true" />
-          <span>GitHub</span>
-        </a>
+        <div className="header-actions">
+          <DownloadButton compact />
+        </div>
 
         <button
           className="mobile-menu-button"
@@ -67,9 +67,7 @@ export function SiteHeader() {
               {item.label}
             </a>
           ))}
-          <a href={githubUrl} target="_blank" rel="noreferrer" onClick={() => setMenuOpen(false)}>
-            GitHub 源码
-          </a>
+          <DownloadButton />
         </nav>
       )}
     </header>
