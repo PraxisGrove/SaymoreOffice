@@ -19,6 +19,7 @@ import {
   VolumeX,
   X,
 } from "lucide-react";
+import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "motion/react";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { demoScenarios } from "@/data/site";
@@ -44,10 +45,18 @@ export function HeroDemo() {
   const [step, setStep] = useState(2);
   const [playing, setPlaying] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(false);
+  const [autoRotate, setAutoRotate] = useState(true);
+  const [playbackRevision, setPlaybackRevision] = useState(0);
   const shellRef = useRef<HTMLElement>(null);
+  const scenarioButtonsRef = useRef<Array<HTMLButtonElement | null>>([]);
   const audioContext = useRef<AudioContext | null>(null);
   const voiceAudio = useRef<HTMLAudioElement | null>(null);
+  const reducedMotion = useReducedMotion();
   const scenario = demoScenarios[scenarioIndex];
+  const sceneKey = `${scenario.id}-${step === 1 ? "product" : step === LAST_STEP ? "outro" : "app"}`;
+  const sceneTransition = reducedMotion
+    ? { duration: 0.16, ease: "easeOut" as const }
+    : { type: "spring" as const, bounce: 0, duration: 0.34 };
 
   const ensureAudio = useCallback(() => {
     if (!audioContext.current || audioContext.current.state === "closed") audioContext.current = new AudioContext();
@@ -88,11 +97,12 @@ export function HeroDemo() {
   );
 
   const stopVoice = useCallback(() => {
-    if (!voiceAudio.current) return;
-    voiceAudio.current.pause();
-    voiceAudio.current.removeAttribute("src");
-    voiceAudio.current.load();
+    const audio = voiceAudio.current;
+    if (!audio) return;
     voiceAudio.current = null;
+    audio.pause();
+    audio.removeAttribute("src");
+    audio.load();
   }, []);
 
   const playVoice = useCallback(
@@ -122,6 +132,7 @@ export function HeroDemo() {
     });
   }, [playTone]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the revision intentionally restarts an unchanged step timer.
   useEffect(() => {
     if (!playing) return;
     if (step === 2 && soundEnabled) return;
@@ -129,6 +140,10 @@ export function HeroDemo() {
     const timer = window.setTimeout(() => {
       if (step === LAST_STEP) {
         stopVoice();
+        if (!autoRotate) {
+          setPlaying(false);
+          return;
+        }
         setScenarioIndex((current) => (current + 1) % demoScenarios.length);
         setStep(1);
         return;
@@ -146,12 +161,13 @@ export function HeroDemo() {
     }, STEP_DELAYS[step]);
 
     return () => window.clearTimeout(timer);
-  }, [playTone, playing, soundEnabled, step, stopVoice]);
+  }, [autoRotate, playbackRevision, playTone, playing, soundEnabled, step, stopVoice]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the revision intentionally restarts audio for the active scenario.
   useEffect(() => {
     if (step !== 2 || !soundEnabled || !playing || (voiceAudio.current && !voiceAudio.current.paused)) return;
     playVoice(scenario.audioSrc, finishSpokenScene);
-  }, [finishSpokenScene, playVoice, playing, scenario.audioSrc, soundEnabled, step]);
+  }, [finishSpokenScene, playbackRevision, playVoice, playing, scenario.audioSrc, soundEnabled, step]);
 
   useEffect(() => {
     let frame = 0;
@@ -191,6 +207,7 @@ export function HeroDemo() {
   }, [stopVoice]);
 
   const togglePlayback = () => {
+    setAutoRotate(false);
     if (playing) {
       stopVoice();
     }
@@ -199,12 +216,15 @@ export function HeroDemo() {
 
   const replay = () => {
     stopVoice();
+    setAutoRotate(false);
+    setPlaybackRevision((current) => current + 1);
     setStep(1);
     setPlaying(true);
     playTone(420, 0.08);
   };
 
   const toggleSound = () => {
+    setAutoRotate(false);
     if (soundEnabled) {
       stopVoice();
       setSoundEnabled(false);
@@ -219,9 +239,24 @@ export function HeroDemo() {
 
   const selectScenario = (index: number) => {
     stopVoice();
+    setAutoRotate(false);
+    setPlaybackRevision((current) => current + 1);
     setScenarioIndex(index);
     setStep(2);
     setPlaying(true);
+  };
+
+  const handleScenarioKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
+    let nextIndex: number | null = null;
+    if (event.key === "ArrowRight") nextIndex = (index + 1) % demoScenarios.length;
+    if (event.key === "ArrowLeft") nextIndex = (index - 1 + demoScenarios.length) % demoScenarios.length;
+    if (event.key === "Home") nextIndex = 0;
+    if (event.key === "End") nextIndex = demoScenarios.length - 1;
+    if (nextIndex === null) return;
+
+    event.preventDefault();
+    selectScenario(nextIndex);
+    scenarioButtonsRef.current[nextIndex]?.focus();
   };
 
   return (
@@ -243,7 +278,9 @@ export function HeroDemo() {
               <div className="laptop-camera" aria-hidden="true" />
               <div className={`laptop-screen laptop-screen--step-${step}`}>
                 <div className="demo-controls">
-                  <span>{stageLabels[step - 1]}</span>
+                  <span aria-live="polite" aria-atomic="true">
+                    {stageLabels[step - 1]}
+                  </span>
                   <button
                     type="button"
                     onClick={toggleSound}
@@ -259,28 +296,62 @@ export function HeroDemo() {
                   </button>
                 </div>
 
-                <div className="scenario-switcher" role="tablist" aria-label="选择语音输入场景">
-                  {demoScenarios.map((item, index) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      role="tab"
-                      aria-selected={scenarioIndex === index}
-                      className={scenarioIndex === index ? "is-selected" : ""}
-                      onClick={() => selectScenario(index)}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
+                <LayoutGroup id="hero-scenarios">
+                  <div className="scenario-switcher" role="tablist" aria-label="选择语音输入场景">
+                    {demoScenarios.map((item, index) => {
+                      const selected = scenarioIndex === index;
+                      return (
+                        <button
+                          key={item.id}
+                          ref={(element) => {
+                            scenarioButtonsRef.current[index] = element;
+                          }}
+                          id={`scenario-tab-${item.id}`}
+                          type="button"
+                          role="tab"
+                          aria-controls={`demo-scene-panel-${sceneKey}`}
+                          aria-selected={selected}
+                          tabIndex={selected ? 0 : -1}
+                          className={selected ? "is-selected" : ""}
+                          onClick={() => selectScenario(index)}
+                          onKeyDown={(event) => handleScenarioKeyDown(event, index)}
+                        >
+                          {selected && (
+                            <motion.span
+                              className="scenario-selection"
+                              layoutId="scenario-selection"
+                              transition={reducedMotion ? { duration: 0 } : sceneTransition}
+                              aria-hidden="true"
+                            />
+                          )}
+                          <span className="scenario-label">{item.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </LayoutGroup>
 
-                {step === 1 ? (
-                  <ProductPreview view={scenario.productView} />
-                ) : step <= 4 ? (
-                  <AppScene step={step} scenario={scenario} />
-                ) : (
-                  <BrandOutro />
-                )}
+                <AnimatePresence initial={false} mode="sync">
+                  <motion.div
+                    key={sceneKey}
+                    id={`demo-scene-panel-${sceneKey}`}
+                    className="demo-scene-layer"
+                    role="tabpanel"
+                    aria-labelledby={`scenario-tab-${scenario.id}`}
+                    initial={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.994 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 1.004 }}
+                    transition={sceneTransition}
+                  >
+                    {step === 1 ? (
+                      <ProductPreview view={scenario.productView} />
+                    ) : step <= 4 ? (
+                      <AppScene step={step} scenario={scenario} />
+                    ) : (
+                      <BrandOutro />
+                    )}
+                  </motion.div>
+                </AnimatePresence>
 
                 <ol className="screen-progress" aria-label="演示进度">
                   {stageLabels.map((label, index) => (
@@ -771,30 +842,52 @@ function MemoScene({ step, raw, refined }: { step: number; raw: string; refined:
 }
 
 function RecordingCapsule({ mode }: { mode: "recording" | "processing" | "delivered" }) {
+  const reducedMotion = useReducedMotion();
+  const transition = reducedMotion
+    ? { duration: 0.16, ease: "easeOut" as const }
+    : { type: "spring" as const, bounce: 0, duration: 0.32 };
+
   return (
-    <div className={`recording-capsule recording-capsule--${mode}`}>
-      {mode === "recording" ? (
-        <>
-          <span className="capsule-action capsule-action--dark">
-            <X size={13} />
-          </span>
-          <Waveform active />
-          <span className="capsule-action capsule-action--light">
-            <Check size={14} />
-          </span>
-        </>
-      ) : mode === "processing" ? (
-        <>
-          <span className="processing-spinner" />
-          <strong>正在转写并精炼</strong>
-        </>
-      ) : (
-        <>
-          <Check size={15} />
-          <strong>已写入当前光标</strong>
-        </>
-      )}
-    </div>
+    <motion.div
+      layout="size"
+      className={`recording-capsule recording-capsule--${mode}`}
+      initial={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 7, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={transition}
+    >
+      <AnimatePresence initial={false} mode="popLayout">
+        <motion.span
+          key={mode}
+          className="recording-capsule__content"
+          initial={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.98 }}
+          transition={transition}
+        >
+          {mode === "recording" ? (
+            <>
+              <span className="capsule-action capsule-action--dark">
+                <X size={13} />
+              </span>
+              <Waveform active />
+              <span className="capsule-action capsule-action--light">
+                <Check size={14} />
+              </span>
+            </>
+          ) : mode === "processing" ? (
+            <>
+              <span className="processing-spinner" />
+              <strong>正在转写并精炼</strong>
+            </>
+          ) : (
+            <>
+              <Check size={15} />
+              <strong>已写入当前光标</strong>
+            </>
+          )}
+        </motion.span>
+      </AnimatePresence>
+    </motion.div>
   );
 }
 

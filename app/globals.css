@@ -82,7 +82,6 @@ p {
   display: flex;
   align-items: center;
   padding: clamp(72px, 10dvh, 120px) 0;
-  scroll-margin-top: 76px;
 }
 main > section {
   scroll-snap-align: start;
@@ -755,6 +754,7 @@ main > section:not(.hero) {
   font-weight: 620;
 }
 .demo-controls button {
+  position: relative;
   width: 24px;
   height: 24px;
   display: inline-flex;
@@ -766,10 +766,18 @@ main > section:not(.hero) {
   background: transparent;
   color: inherit;
   cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    background 140ms var(--ease-out),
+    color 140ms var(--ease-out),
+    transform 90ms var(--ease-out);
 }
 .demo-controls button:hover {
   background: #e8e8e5;
   color: #161616;
+}
+.demo-controls button:active {
+  transform: scale(0.94);
 }
 .scenario-switcher {
   position: absolute;
@@ -785,6 +793,7 @@ main > section:not(.hero) {
   transform: translateX(-50%);
 }
 .scenario-switcher button {
+  position: relative;
   min-height: 22px;
   padding: 0 8px;
   border: 0;
@@ -795,13 +804,45 @@ main > section:not(.hero) {
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    color 140ms var(--ease-out),
+    transform 90ms var(--ease-out);
 }
 .scenario-switcher button:hover {
   color: #161616;
 }
 .scenario-switcher button.is-selected {
-  background: #161616;
+  background: transparent;
   color: #fff;
+}
+.scenario-switcher button:active {
+  transform: scale(0.96);
+}
+.scenario-selection {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: 5px;
+  background: #161616;
+  box-shadow: 0 1px 3px oklch(0.2 0 0 / 0.16);
+}
+.scenario-label {
+  position: relative;
+  z-index: 1;
+}
+.demo-scene-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  contain: paint;
+  transform-origin: center;
+}
+.demo-scene-layer > .product-home,
+.demo-scene-layer > .target-app,
+.demo-scene-layer > .memo-app,
+.demo-scene-layer > .brand-outro {
+  animation: none;
 }
 .window-lights {
   display: flex;
@@ -1798,8 +1839,7 @@ main > section:not(.hero) {
   background: #151515;
   color: #fafaf8;
   box-shadow: 0 4px 10px #16161624;
-  transform: translateX(-50%);
-  animation: capsule-in 280ms var(--ease-out) both;
+  translate: -50% 0;
 }
 .recording-capsule--processing,
 .recording-capsule--delivered {
@@ -1814,7 +1854,13 @@ main > section:not(.hero) {
   font-weight: 650;
   white-space: nowrap;
 }
-.recording-capsule--delivered > svg {
+.recording-capsule__content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.recording-capsule--delivered .recording-capsule__content > svg {
   color: #7cd5a2;
 }
 .capsule-action {
@@ -1912,16 +1958,6 @@ main > section:not(.hero) {
     opacity: 1;
     filter: blur(0);
     transform: scale(1);
-  }
-}
-@keyframes capsule-in {
-  from {
-    opacity: 0;
-    transform: translate(-50%, 7px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0) scale(1);
   }
 }
 @keyframes spin {
@@ -2041,7 +2077,6 @@ main > section:not(.hero) {
   padding: clamp(72px, 10dvh, 120px) 0;
   background: var(--ink);
   color: var(--canvas);
-  scroll-margin-top: 64px;
 }
 .overview-grid {
   display: grid;
@@ -3694,5 +3729,64 @@ main > section:not(.hero) {
   }
   .laptop-screen::after {
     display: none;
+  }
+  .demo-scene-layer,
+  .recording-capsule,
+  .recording-capsule__content,
+  .scenario-selection {
+    filter: none !important;
+    transform: none !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .site-header--ready,
+  .demo-controls,
+  .scenario-switcher {
+    background: var(--canvas);
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .demo-controls,
+  .scenario-switcher {
+    border: 1px solid var(--ink);
+    background: var(--canvas);
+    box-shadow: none;
+  }
+  .demo-controls,
+  .scenario-switcher button {
+    color: var(--ink);
+  }
+  .scenario-switcher button.is-selected {
+    color: var(--canvas);
+  }
+  .screen-progress li {
+    border: 1px solid var(--ink);
+  }
+}
+
+@media (forced-colors: active) {
+  .demo-controls,
+  .scenario-switcher,
+  .demo-controls button,
+  .scenario-switcher button {
+    border: 1px solid ButtonText;
+    forced-color-adjust: auto;
+  }
+  .scenario-selection,
+  .screen-progress li.is-active {
+    background: Highlight;
+  }
+}
+
+@media (pointer: coarse) {
+  .demo-controls button {
+    width: 44px;
+    height: 44px;
+  }
+  .scenario-switcher button {
+    min-height: 44px;
   }
 }
