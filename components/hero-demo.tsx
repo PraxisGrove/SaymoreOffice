@@ -141,6 +141,7 @@ export function HeroDemo() {
       if (step === LAST_STEP) {
         stopVoice();
         if (!autoRotate) {
+          setStep(1);
           setPlaying(false);
           return;
         }
