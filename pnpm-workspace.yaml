@@ -1,0 +1,10 @@
+packages:
+  - "."
+
+allowBuilds:
+  sharp: true
+  unrs-resolver: true
+
+overrides:
+  "@emnapi/runtime": "1.11.2"
+  "postcss": "8.5.22"
