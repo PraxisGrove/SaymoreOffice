@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { PricingPage } from "@/components/pricing-page";
-import { og, pageSeo } from "@/lib/seo";
+import { og, pageSeo, twitter } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Pricing",
@@ -13,6 +13,10 @@ export const metadata: Metadata = {
     "Pricing | Saymore",
     "Dictation is free. Refinement is a one-time purchase. Bring your own API key.",
     "en_US",
+  ),
+  twitter: twitter(
+    "Pricing | Saymore",
+    "Dictation is free. Refinement is a one-time purchase. Bring your own API key.",
   ),
 };
 

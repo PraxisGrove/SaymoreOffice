@@ -22,7 +22,7 @@ import { RefinementComparison } from "@/components/refinement-comparison";
 import { SiteHeader } from "@/components/site-header";
 import { githubUrl, licenseUrl, pricingPlans, releaseUrl } from "@/data/site";
 import { getRecentReleases } from "@/lib/github";
-import { og, pageSeo } from "@/lib/seo";
+import { og, pageSeo, twitter } from "@/lib/seo";
 
 export const metadata: Metadata = {
   alternates: pageSeo("zh", "/", "/zh").alternates,
@@ -32,6 +32,7 @@ export const metadata: Metadata = {
     "本地优先、模型可替换，面向常见桌面输入场景的源码可用语音输入工具。",
     "zh_CN",
   ),
+  twitter: twitter("Saymore - 用说话代替打字", "本地优先、模型可替换，面向常见桌面输入场景的源码可用语音输入工具。"),
 };
 
 export default async function HomePage() {

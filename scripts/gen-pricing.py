@@ -27,9 +27,14 @@ def body(lang):
     b = re.sub(r'<a href="#">(获取 Groq[^<]*)</a>', r'<a href="https://console.groq.com/keys">\1</a>', b)
     # checkout links get ?channel= at runtime (components/site-analytics.tsx)
     b = b.replace('<a class="btn primary" href="#">', '<a class="btn primary" data-checkout href="#">')
-    # "How to get a key": no dedicated API-key section in the README yet; nearest real anchor (verified on GitHub)
-    readme = f"{GH}/blob/main/README.zh-CN.md#目前可以做什么" if zh else f"{GH}/blob/main/README.md#what-you-can-do"
-    b = b.replace('<a class="link" href="#">', f'<a class="link" href="{readme}">', 1)
+    # Key links: straight to the providers' official API key pages (two links, one line)
+    ext = 'target="_blank" rel="noopener"'
+    oa = f'<a href="https://platform.openai.com/api-keys" {ext}>OpenAI</a>'
+    gq = f'<a href="https://console.groq.com/keys" {ext}>Groq</a>'
+    label = "获取 key：" if zh else "Get a key: "
+    b = re.sub(r'<a class="link" href="#">[^<]*</a>', f'<p class="keylinks">{label}{oa}<span aria-hidden="true"> · </span>{gq}</p>', b, count=1)
+    b = b.replace('<a href="https://platform.openai.com/api-keys">', f'<a href="https://platform.openai.com/api-keys" {ext}>')
+    b = b.replace('<a href="https://console.groq.com/keys">', f'<a href="https://console.groq.com/keys" {ext}>')
     # hidden until wired + verified
     b = b.replace('<div class="providers">', '<div class="providers off">')
     b = b.replace('class="rate" data-ph', 'class="rate off" data-ph')
@@ -40,7 +45,7 @@ css = css.replace(":root{", ".pricing-page{").replace("body{", ".pricing-page{")
 css = re.sub(r"(^|})\s*(nav|a|footer|main|h1|h2|h3|table)\b", lambda m: f"{m.group(1)}.pricing-page {m.group(2)}", css)
 css += ("\n.pricing-page{font-family:var(--font-geist-sans),Geist,\"PingFang SC\",\"Noto Sans CJK SC\",sans-serif}"
         ".pricing-page main > section{border-top:0;scroll-snap-align:none}.pricing-page .faq{border-top:1px solid var(--line)}"
-        ".pricing-page .link{color:var(--blue)}.pricing-page .q h3{letter-spacing:0}.pricing-page .key p{text-wrap:pretty}"
+        ".pricing-page .link{color:var(--blue)}.pricing-page .key p.keylinks{margin:0;font-size:15px;color:var(--text);white-space:nowrap}.pricing-page .keylinks a{color:var(--blue);font-weight:560}.pricing-page .q h3{letter-spacing:0}.pricing-page .key p{text-wrap:pretty}"
         ".pricing-page :focus-visible{outline:2px solid var(--blue);outline-offset:2px}")
 css += "\nhtml:has(.pricing-page){scroll-snap-type:none}"
 css += "\n.pricing-page .logo{flex-shrink:0}.pricing-page .logo img{height:28px;width:auto}\n.pricing-page .off{display:none!important}\n"

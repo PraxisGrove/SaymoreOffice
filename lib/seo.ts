@@ -14,3 +14,7 @@ export function pageSeo(self: "en" | "zh", en: string, zh: string): Pick<Metadat
 export function og(url: string, title: string, description: string, locale: "en_US" | "zh_CN"): Metadata["openGraph"] {
   return { title, description, url, type: "website", locale, siteName: "Saymore" };
 }
+
+export function twitter(title: string, description: string): Metadata["twitter"] {
+  return { card: "summary_large_image", title, description };
+}

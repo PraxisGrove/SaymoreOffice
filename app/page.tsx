@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { pricingCss } from "@/components/pricing-content";
 import { RefinementComparison } from "@/components/refinement-comparison";
 import { githubUrl, releaseUrl } from "@/data/site";
-import { og, pageSeo } from "@/lib/seo";
+import { og, pageSeo, twitter } from "@/lib/seo";
 
 const enLabels = { prev: "Previous example", next: "Next example", before: "What you said", after: "What gets typed" };
 const enComparisons = [
@@ -37,9 +37,14 @@ export const metadata: Metadata = {
     "Press a shortcut, talk, and Saymore types clean text at your cursor in any app on macOS and Windows.",
     "en_US",
   ),
+  twitter: twitter(
+    "Saymore — Speak instead of type",
+    "Press a shortcut, talk, and Saymore types clean text at your cursor in any app on macOS and Windows.",
+  ),
 };
 
 const homeCss = `
+.home .comparison-toolbar strong{text-wrap:balance}.home .comparison-toolbar span{white-space:nowrap}
 .home .bar,.home footer{position:relative}
 .home .bar::after,.home footer::before{content:"";position:absolute;left:40px;right:40px;border-top:1px solid var(--line)}
 .home .bar::after{bottom:0}.home footer::before{top:0}.home footer{border-top:0}
