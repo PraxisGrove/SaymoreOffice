@@ -27,12 +27,14 @@ def body(lang):
     b = re.sub(r'<a href="#">(获取 Groq[^<]*)</a>', r'<a href="https://console.groq.com/keys">\1</a>', b)
     # checkout links get ?channel= at runtime (components/site-analytics.tsx)
     b = b.replace('<a class="btn primary" href="#">', '<a class="btn primary" data-checkout href="#">')
-    # Key links: straight to the providers' official API key pages (two links, one line)
+    # Key link: only providers the *released* app (v0.2.0) supports with a key.
+    # Cloud speech in v0.2.0 = Volcengine (macOS Dictation / local models need no key).
+    # URL is the app's own VOLCENGINE_KEY_PAGE (apps/desktop/src/settings_ui/provider_key_page.rs @ v0.2.0).
+    # OpenAI / Groq links stay in the hidden .providers block until v0.3 ships.
     ext = 'target="_blank" rel="noopener"'
-    oa = f'<a href="https://platform.openai.com/api-keys" {ext}>OpenAI</a>'
-    gq = f'<a href="https://console.groq.com/keys" {ext}>Groq</a>'
+    volc = f'<a href="https://console.volcengine.com/ark/region:ark+cn-beijing/apiKey" {ext}>{"火山引擎" if zh else "Volcengine"}</a>'
     label = "获取 key：" if zh else "Get a key: "
-    b = re.sub(r'<a class="link" href="#">[^<]*</a>', f'<p class="keylinks">{label}{oa}<span aria-hidden="true"> · </span>{gq}</p>', b, count=1)
+    b = re.sub(r'<a class="link" href="#">[^<]*</a>', f'<p class="keylinks">{label}{volc}</p>', b, count=1)
     b = b.replace('<a href="https://platform.openai.com/api-keys">', f'<a href="https://platform.openai.com/api-keys" {ext}>')
     b = b.replace('<a href="https://console.groq.com/keys">', f'<a href="https://console.groq.com/keys" {ext}>')
     # hidden until wired + verified
