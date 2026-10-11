@@ -40,14 +40,25 @@ def body(lang):
     # Card copy (brand designer, 10/12): a key is optional. Checked against v0.2.0:
     # macOS Dictation is wired end to end; local models (sherpa-onnx) are not platform-gated.
     if zh:
-        new = ("<h2>key 不是必需的</h2><p>Saymore 不卖识别额度。不用 key 也能开始：用 macOS 听写或本地模型。"
+        new = ("<h2>听写不需要 key</h2><p>Saymore 不卖识别额度。不用 key 也能开始：用 macOS 听写或本地模型。"
                "要用云端识别，就接入你信任的服务商，直接付费给它。我们不加一分钱。</p>")
-        b, n = re.subn(r"<h2>用你自己的 API key</h2><p>[^<]*</p>", new, b)
+        b, n = re.subn(r"<h2>[^<]*</h2><p>[^<]*</p>", new, b)
     else:
-        new = ("<h2>Keys are optional</h2><p>Saymore doesn’t sell transcription credits. You can start without a key: "
+        new = ("<h2>No key needed to dictate</h2><p>Saymore doesn’t sell transcription credits. You can start without a key: "
                "use macOS Dictation or a local model. For cloud transcription, connect a provider you already trust "
                "and pay them directly. We add nothing on top.</p>")
-        b, n = re.subn(r"<h2>Use your own API key</h2><p>[^<]*</p>", new, b)
+        b, n = re.subn(r"<h2>[^<]*</h2><p>[^<]*</p>", new, b)
+    assert n == 1
+    # Intro lede (approved 10/12); enforced here even if hifi lags behind
+    lede = ("用 macOS 听写或本地模型，想说多少说多少，免费，不需要 key。付一次钱，解锁润色和个人词典；润色要接你自己的云端 API key。" if zh else
+            "Dictate as much as you like with macOS Dictation or a local model. Free, no key needed. Pay once to unlock refinement and your personal dictionary; refinement runs on your own cloud API key.")
+    b, n = re.subn(r'<p class="lede">[^<]*</p>', f'<p class="lede">{lede}</p>', b)
+    assert n == 1
+    # Refinement row: it needs a cloud LLM key in the released app
+    if zh:
+        b, n = re.subn(r'(<th scope="row">润色：[^<]*)</th>', r'\1<span class="row-note">需要接入你自己的云端 API key</span></th>', b)
+    else:
+        b, n = re.subn(r'(<th scope="row">Refinement:[^<]*)</th>', r'\1<span class="row-note">Requires your own cloud API key</span></th>', b)
     assert n == 1
     # hidden until wired + verified
     b = b.replace('<div class="providers">', '<div class="providers off">')
@@ -59,7 +70,7 @@ css = css.replace(":root{", ".pricing-page{").replace("body{", ".pricing-page{")
 css = re.sub(r"(^|})\s*(nav|a|footer|main|h1|h2|h3|table)\b", lambda m: f"{m.group(1)}.pricing-page {m.group(2)}", css)
 css += ("\n.pricing-page{font-family:var(--font-geist-sans),Geist,\"PingFang SC\",\"Noto Sans CJK SC\",sans-serif}"
         ".pricing-page main > section{border-top:0;scroll-snap-align:none}.pricing-page .faq{border-top:1px solid var(--line)}"
-        ".pricing-page .link{color:var(--blue)}.pricing-page .key p.keylinks{margin:0;font-size:15px;color:var(--text);white-space:nowrap}.pricing-page .keylinks a{color:var(--blue);font-weight:560}.pricing-page .q h3{letter-spacing:0}.pricing-page .key p{text-wrap:pretty}"
+        ".pricing-page .lede{text-wrap:pretty}.pricing-page .row-note{display:block;margin-top:4px;font-size:13px;line-height:1.45;color:var(--muted);text-wrap:balance}.pricing-page .link{color:var(--blue)}.pricing-page .key p.keylinks{margin:0;font-size:15px;color:var(--text);white-space:nowrap}.pricing-page .keylinks a{color:var(--blue);font-weight:560}.pricing-page .q h3{letter-spacing:0}.pricing-page .key p{text-wrap:pretty}"
         ".pricing-page :focus-visible{outline:2px solid var(--blue);outline-offset:2px}")
 css += "\nhtml:has(.pricing-page){scroll-snap-type:none}"
 css += "\n.pricing-page .logo{flex-shrink:0}.pricing-page .logo img{height:28px;width:auto}\n.pricing-page .off{display:none!important}\n"
