@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { pricingCss } from "@/components/pricing-content";
 import { RefinementComparison } from "@/components/refinement-comparison";
 import { githubUrl, releaseUrl } from "@/data/site";
+import { og, pageSeo } from "@/lib/seo";
 
 const enLabels = { prev: "Previous example", next: "Next example", before: "What you said", after: "What gets typed" };
 const enComparisons = [
@@ -29,7 +30,13 @@ export const metadata: Metadata = {
   title: { absolute: "Saymore — Speak instead of type" },
   description:
     "Press a shortcut, talk, and Saymore types clean text at your cursor in any app on macOS and Windows. Bring your own API key.",
-  alternates: { canonical: "/", languages: { "zh-CN": "/zh" } },
+  alternates: pageSeo("en", "/", "/zh").alternates,
+  openGraph: og(
+    "/",
+    "Saymore — Speak instead of type",
+    "Press a shortcut, talk, and Saymore types clean text at your cursor in any app on macOS and Windows.",
+    "en_US",
+  ),
 };
 
 const homeCss = `
@@ -85,8 +92,7 @@ export default function HomePage() {
         <section className="h-hero">
           <h1>Speak instead of type.</h1>
           <p>
-            Press a shortcut and talk. Saymore turns it into clean text at your cursor, in any app on macOS and
-            Windows.
+            Press a shortcut and talk. Saymore turns it into clean text at your cursor, in any app on macOS and Windows.
           </p>
           <div className="cta">
             <a className="btn primary" href={releaseUrl}>
