@@ -44,7 +44,7 @@ export default async function HomePage() {
           <p>本地优先的桌面语音输入工具</p>
           <h2>按下快捷键自然说话，Saymore 负责识别、整理并写入你正在使用的应用。</h2>
           <div className="overview-meta">
-            <span>macOS 12+</span>
+            <span>macOS 13+</span>
             <span>Windows</span>
             <span>Rust + Slint</span>
             <span>PolyForm Shield</span>
@@ -289,7 +289,7 @@ export default async function HomePage() {
           <div>
             <Image src="/brand/saymore-icon.png" width={64} height={64} alt="" />
             <h2>让手指休息，让想法继续。</h2>
-            <p>Saymore 支持 macOS 12+ 与 Windows。当前安装包通过 GitHub Releases 分发。</p>
+            <p>Saymore 支持 macOS 13+ 与 Windows。当前安装包通过 GitHub Releases 分发。</p>
           </div>
           <div className="download-actions">
             <DownloadButton inverse />

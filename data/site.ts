@@ -5,7 +5,7 @@ export const licenseUrl = `${githubUrl}/blob/main/LICENSE`;
 export const navItems = [
   { label: "概览", href: "#overview" },
   { label: "能力", href: "#features" },
-  { label: "方案", href: "#pricing" },
+  { label: "定价", href: "/zh/pricing" },
   { label: "更新", href: "#changelog" },
 ];
 
