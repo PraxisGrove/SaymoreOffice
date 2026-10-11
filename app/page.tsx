@@ -33,6 +33,11 @@ export const metadata: Metadata = {
 };
 
 const homeCss = `
+.home .bar,.home footer{position:relative}
+.home .bar::after,.home footer::before{content:"";position:absolute;left:40px;right:40px;border-top:1px solid var(--line)}
+.home .bar::after{bottom:0}.home footer::before{top:0}.home footer{border-top:0}
+.home .comparison-after{background:#E8F0FE}.home .comparison-after .comparison-label{color:#2563EB}
+.home .comparison-note{color:#606060;font-size:13px}.home .comparison-note svg{display:none}
 .home .h-hero .small{margin-top:12px;font-size:13px;color:var(--muted)}
 .home .h-demo{padding:0 0 24px}
 .home .h-hero{padding:96px 0 72px;max-width:820px}
@@ -43,7 +48,7 @@ const homeCss = `
 .home .fl{display:grid;grid-template-columns:1fr 1fr;gap:36px 48px}.home .fl h3{font-size:16px;font-weight:600;margin:0 0 6px}.home .fl p{margin:0;color:var(--text);font-size:15px}
 .home .h-end{padding:72px 0 96px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:32px;flex-wrap:wrap}
 .home .h-end h2{font-size:32px;font-weight:620;letter-spacing:-.02em;margin:0}
-@media(max-width:700px){.home .h-hero{padding:48px 0 40px}.home .h-hero h1{font-size:40px}.home .h-hero p{font-size:17px}
+@media(max-width:700px){.home .bar::after,.home footer::before{left:20px;right:20px}.home .h-hero{padding:48px 0 40px}.home .h-hero h1{font-size:40px}.home .h-hero p{font-size:17px}
 .home .h-feats{grid-template-columns:1fr;gap:28px;padding:56px 0}.home .fl{grid-template-columns:1fr;gap:24px}.home .h-end{padding:48px 0 64px}.home .h-end h2{font-size:26px}}
 `;
 
