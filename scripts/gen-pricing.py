@@ -27,6 +27,9 @@ def body(lang):
     b = re.sub(r'<a href="#">(获取 Groq[^<]*)</a>', r'<a href="https://console.groq.com/keys">\1</a>', b)
     # checkout links get ?channel= at runtime (components/site-analytics.tsx)
     b = b.replace('<a class="btn primary" href="#">', '<a class="btn primary" data-checkout href="#">')
+    # "How to get a key": no dedicated API-key section in the README yet; nearest real anchor (verified on GitHub)
+    readme = f"{GH}/blob/main/README.zh-CN.md#目前可以做什么" if zh else f"{GH}/blob/main/README.md#what-you-can-do"
+    b = b.replace('<a class="link" href="#">', f'<a class="link" href="{readme}">', 1)
     # hidden until wired + verified
     b = b.replace('<div class="providers">', '<div class="providers off">')
     b = b.replace('class="rate" data-ph', 'class="rate off" data-ph')
