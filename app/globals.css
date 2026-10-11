@@ -138,7 +138,6 @@ main > section:not(.hero) {
   font-weight: 680;
   letter-spacing: -0.02em;
 }
-.brand-link img,
 .hero-brand img,
 .footer-brand img {
   border-radius: 8px;
@@ -1044,13 +1043,13 @@ main > section:not(.hero) {
   align-items: center;
   gap: 5px;
   background: #e5f5eb;
-  color: #168a4a;
+  color: #147a42;
 }
 .status-panel header > span i {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #168a4a;
+  background: #147a42;
 }
 .status-panel > p {
   margin-top: 5px;
@@ -1074,7 +1073,7 @@ main > section:not(.hero) {
   padding: 7px;
   border-radius: 50%;
   background: #e5f5eb;
-  color: #168a4a;
+  color: #147a42;
 }
 .usage-panel {
   position: relative;
@@ -1201,7 +1200,7 @@ main > section:not(.hero) {
   padding: 5px 8px;
   border-radius: 5px;
   background: #e5f5eb;
-  color: #168a4a;
+  color: #147a42;
   font-size: clamp(6px, 0.95cqi, 9px);
 }
 .model-list {
@@ -1281,7 +1280,7 @@ main > section:not(.hero) {
   margin-top: 3px;
 }
 .history-list article > span {
-  color: #168a4a;
+  color: #147a42;
 }
 .dictionary-search {
   margin-bottom: 10px;
@@ -1509,7 +1508,7 @@ main > section:not(.hero) {
 .chat-composer > span {
   display: block;
   margin-top: 5px;
-  color: #168a4a;
+  color: #147a42;
   font-size: clamp(5px, 0.85cqi, 8px);
 }
 .chat-composer.has-copy {
@@ -1658,7 +1657,7 @@ main > section:not(.hero) {
 .issue-editor > header b {
   padding: 5px 8px;
   border-radius: 6px;
-  background: #1f883d;
+  background: #147a42;
   color: #fff;
   font-size: clamp(6px, 0.95cqi, 9px);
 }
@@ -1694,8 +1693,8 @@ main > section:not(.hero) {
   font-size: clamp(6px, 0.9cqi, 9px);
 }
 .issue-editor > footer button {
-  border-color: #1f883d;
-  background: #1f883d;
+  border-color: #147a42;
+  background: #147a42;
   color: #fff;
 }
 .memo-app {
@@ -1847,7 +1846,7 @@ main > section:not(.hero) {
   padding-inline: 10px;
 }
 .recording-capsule--delivered {
-  border-color: #168a4a;
+  border-color: #147a42;
 }
 .recording-capsule strong {
   font-size: 10px;
