@@ -56,6 +56,9 @@ def body(lang):
         lede = lede.replace("云端 API key", "云端\u00a0API\u00a0key")  # keep together at 390
     b, n = re.subn(r'<p class="lede">[^<]*</p>', f'<p class="lede">{lede}</p>', b)
     assert n == 1
+    # Drop the "unlimited dictation with your own key" row (implies a key is needed)
+    b, n = re.subn(r'<tr><th scope="row">(Unlimited dictation with your own key|用自己的 key 不限次听写)</th>.*?</tr>', '', b)
+    assert n == 1
     # Refinement row: it needs a cloud LLM key in the released app
     if zh:
         b, n = re.subn(r'(<th scope="row">润色：[^<]*)</th>', r'\1<span class="row-note">需要接入你自己的云端 API key</span></th>', b)
