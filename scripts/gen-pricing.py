@@ -52,6 +52,8 @@ def body(lang):
     # Intro lede (approved 10/12); enforced here even if hifi lags behind
     lede = ("用 macOS 听写或本地模型，想说多少说多少，免费，不需要 key。付一次钱，解锁润色和个人词典；润色要接你自己的云端 API key。" if zh else
             "Dictate as much as you like with macOS Dictation or a local model. Free, no key needed. Pay once to unlock refinement and your personal dictionary; refinement runs on your own cloud API key.")
+    if zh:
+        lede = lede.replace("云端 API key", "云端\u00a0API\u00a0key")  # keep together at 390
     b, n = re.subn(r'<p class="lede">[^<]*</p>', f'<p class="lede">{lede}</p>', b)
     assert n == 1
     # Refinement row: it needs a cloud LLM key in the released app
