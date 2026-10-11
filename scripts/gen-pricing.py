@@ -37,7 +37,7 @@ css = css.replace(":root{", ".pricing-page{").replace("body{", ".pricing-page{")
 css = re.sub(r"(^|})\s*(nav|a|footer|main|h1|h2|h3|table)\b", lambda m: f"{m.group(1)}.pricing-page {m.group(2)}", css)
 css += ("\n.pricing-page{font-family:var(--font-geist-sans),Geist,\"PingFang SC\",\"Noto Sans CJK SC\",sans-serif}"
         ".pricing-page main > section{border-top:0;scroll-snap-align:none}.pricing-page .faq{border-top:1px solid var(--line)}"
-        ".pricing-page .link{color:var(--blue)}.pricing-page .q h3{letter-spacing:0}"
+        ".pricing-page .link{color:var(--blue)}.pricing-page .q h3{letter-spacing:0}.pricing-page .key p{text-wrap:pretty}"
         ".pricing-page :focus-visible{outline:2px solid var(--blue);outline-offset:2px}")
 css += "\nhtml:has(.pricing-page){scroll-snap-type:none}"
 css += "\n.pricing-page .logo{flex-shrink:0}.pricing-page .logo img{height:28px;width:auto}\n.pricing-page .off{display:none!important}\n"
