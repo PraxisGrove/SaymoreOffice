@@ -34,9 +34,21 @@ def body(lang):
     ext = 'target="_blank" rel="noopener"'
     volc = f'<a href="https://console.volcengine.com/ark/region:ark+cn-beijing/apiKey" {ext}>{"火山引擎" if zh else "Volcengine"}</a>'
     label = "获取 key：" if zh else "Get a key: "
-    b = re.sub(r'<a class="link" href="#">[^<]*</a>', f'<p class="keylinks">{label}{volc}</p>', b, count=1)
+    b = re.sub(r'<a class="link" href="#">[^<]*</a>', f'<p class="keylinks off">{label}{volc}</p>', b, count=1)
     b = b.replace('<a href="https://platform.openai.com/api-keys">', f'<a href="https://platform.openai.com/api-keys" {ext}>')
     b = b.replace('<a href="https://console.groq.com/keys">', f'<a href="https://console.groq.com/keys" {ext}>')
+    # Card copy (brand designer, 10/12): a key is optional. Checked against v0.2.0:
+    # macOS Dictation is wired end to end; local models (sherpa-onnx) are not platform-gated.
+    if zh:
+        new = ("<h2>key 不是必需的</h2><p>Saymore 不卖识别额度。不用 key 也能开始：用 macOS 听写或本地模型。"
+               "要用云端识别，就接入你信任的服务商，直接付费给它。我们不加一分钱。</p>")
+        b, n = re.subn(r"<h2>用你自己的 API key</h2><p>[^<]*</p>", new, b)
+    else:
+        new = ("<h2>Keys are optional</h2><p>Saymore doesn’t sell transcription credits. You can start without a key: "
+               "use macOS Dictation or a local model. For cloud transcription, connect a provider you already trust "
+               "and pay them directly. We add nothing on top.</p>")
+        b, n = re.subn(r"<h2>Use your own API key</h2><p>[^<]*</p>", new, b)
+    assert n == 1
     # hidden until wired + verified
     b = b.replace('<div class="providers">', '<div class="providers off">')
     b = b.replace('class="rate" data-ph', 'class="rate off" data-ph')
