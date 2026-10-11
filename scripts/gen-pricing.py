@@ -25,6 +25,8 @@ def body(lang):
     b = b.replace('<a href="#">Get a Groq key</a>', '<a href="https://console.groq.com/keys">Get a Groq key</a>')
     b = re.sub(r'<a href="#">(获取 OpenAI[^<]*)</a>', r'<a href="https://platform.openai.com/api-keys">\1</a>', b)
     b = re.sub(r'<a href="#">(获取 Groq[^<]*)</a>', r'<a href="https://console.groq.com/keys">\1</a>', b)
+    # checkout links get ?channel= at runtime (components/site-analytics.tsx)
+    b = b.replace('<a class="btn primary" href="#">', '<a class="btn primary" data-checkout href="#">')
     # hidden until wired + verified
     b = b.replace('<div class="providers">', '<div class="providers off">')
     b = b.replace('class="rate" data-ph', 'class="rate off" data-ph')
