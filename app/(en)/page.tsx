@@ -64,6 +64,8 @@ const homeCss = `
 .home .h-feats{grid-template-columns:1fr;gap:28px;padding:56px 0}.home .fl{grid-template-columns:1fr;gap:24px}.home .h-end{padding:48px 0 64px}.home .h-end h2{font-size:26px}}
 `;
 
+const paid = new Set(["Refinement", "Personal dictionary"]);
+
 const features = [
   ["Works where you type", "Editors, browsers, chat apps and terminals. Text lands at your cursor."],
   ["Your provider, your bill", "Connect a speech API you already use. We add nothing on top."],
@@ -117,7 +119,10 @@ export default function HomePage() {
           <div className="fl">
             {features.map(([t, d]) => (
               <div key={t}>
-                <h3>{t}</h3>
+                <h3>
+                  {t}
+                  {paid.has(t) && <span className="paid-tag">Paid</span>}
+                </h3>
                 <p>{d}</p>
               </div>
             ))}

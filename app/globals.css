@@ -3789,3 +3789,19 @@ main > section:not(.hero) {
     min-height: 44px;
   }
 }
+
+/* "Paid" marker for refinement and personal dictionary (homepages) */
+.paid-tag {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0;
+  color: #606060;
+  vertical-align: middle;
+}
+.paid-tag--block {
+  display: block;
+  margin: 0 0 8px;
+}
