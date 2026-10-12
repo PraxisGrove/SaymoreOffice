@@ -3,9 +3,10 @@
 import { Menu, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { DownloadButton } from "@/components/download-button";
-import { navItems } from "@/data/site";
+import { homeCopy, type Lang } from "@/data/home-copy";
 
-export function SiteHeader() {
+export function SiteHeader({ lang = "zh" }: { lang?: Lang }) {
+  const t = homeCopy[lang].header;
   const [pastHero, setPastHero] = useState(false);
   const [visible, setVisible] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -30,21 +31,21 @@ export function SiteHeader() {
   return (
     <header className={`site-header ${pastHero ? "site-header--ready" : ""} ${visible ? "site-header--visible" : ""}`}>
       <div className="site-header__inner">
-        <a className="brand-link" href="#top" aria-label="返回 Saymore 首页">
+        <a className="brand-link" href="#top" aria-label={t.home}>
           {/* biome-ignore lint/performance/noImgElement: SVG wordmark (no-bar small version per usage.md) */}
           <img src="/brand/saymore-wordmark-small-light.svg" width={103} height={28} alt="Saymore" />
         </a>
 
-        <nav className="desktop-nav" aria-label="主要导航">
-          {navItems.map((item) => (
-            <a key={item.href} href={item.href}>
+        <nav className="desktop-nav" aria-label={t.nav}>
+          {t.items.map((item) => (
+            <a key={item.href} href={item.href} data-placement={item.pricing ? "nav" : undefined}>
               {item.label}
             </a>
           ))}
         </nav>
 
         <div className="header-actions">
-          <DownloadButton compact />
+          <DownloadButton compact lang={lang} placement="header" />
         </div>
 
         <button
@@ -52,7 +53,7 @@ export function SiteHeader() {
           type="button"
           aria-expanded={menuOpen}
           aria-controls="mobile-menu"
-          aria-label={menuOpen ? "关闭导航" : "打开导航"}
+          aria-label={menuOpen ? t.close : t.open}
           onClick={() => setMenuOpen((open) => !open)}
         >
           {menuOpen ? <X size={21} /> : <Menu size={21} />}
@@ -60,13 +61,18 @@ export function SiteHeader() {
       </div>
 
       {menuOpen && (
-        <nav id="mobile-menu" className="mobile-nav" aria-label="移动端导航">
-          {navItems.map((item) => (
-            <a key={item.href} href={item.href} onClick={() => setMenuOpen(false)}>
+        <nav id="mobile-menu" className="mobile-nav" aria-label={t.mobileNav}>
+          {t.items.map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              data-placement={item.pricing ? "mobile_nav" : undefined}
+              onClick={() => setMenuOpen(false)}
+            >
               {item.label}
             </a>
           ))}
-          <DownloadButton />
+          <DownloadButton lang={lang} placement="mobile_menu" />
         </nav>
       )}
     </header>

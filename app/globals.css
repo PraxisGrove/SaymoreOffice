@@ -2578,7 +2578,7 @@ main > section:not(.hero) {
 .release-list {
   border-top: 1px solid var(--border);
 }
-.release-list a {
+.release-list .release-item {
   position: relative;
   min-height: 142px;
   display: grid;
@@ -2590,7 +2590,7 @@ main > section:not(.hero) {
   border-bottom: 1px solid var(--border);
   transition: background 160ms ease;
 }
-.release-list a:hover {
+.release-list .release-item:hover {
   background: var(--surface);
 }
 .release-list time {
@@ -3186,7 +3186,7 @@ main > section:not(.hero) {
     border-top: 0;
   }
 
-  .release-list a {
+  .release-list .release-item {
     grid-template-columns: 1fr auto;
     grid-template-rows: auto auto auto;
     gap: 8px 16px;
@@ -3195,7 +3195,7 @@ main > section:not(.hero) {
     grid-row: auto;
   }
   .release-list strong,
-  .release-list p {
+  .release-list .release-summary {
     grid-column: 1;
   }
   .release-list svg {
@@ -3804,4 +3804,101 @@ main > section:not(.hero) {
 .paid-tag--block {
   display: block;
   margin: 0 0 8px;
+}
+
+/* Release cards: the title link stretches over the card; links inside the summary stay clickable. */
+.release-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.release-summary {
+  min-width: 0;
+}
+.release-summary p {
+  margin: 0;
+}
+.release-summary a {
+  position: relative;
+  z-index: 1;
+  text-decoration: underline;
+}
+.release-summary code {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+
+/* Director 10/12: green only means success. Refinement checks and dictionary tags are neutral grey. */
+.check-list svg {
+  color: var(--muted);
+}
+.dictionary-row i {
+  background: var(--surface);
+  color: var(--muted);
+}
+
+/* Homepage plan rows (EN) — replaces the three plan cards. */
+.plan-rows {
+  margin: 40px 0 0;
+  border-top: 1px solid var(--border);
+}
+.plan-rows > div {
+  display: grid;
+  grid-template-columns: 240px 120px 1fr;
+  gap: 24px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border);
+  align-items: baseline;
+}
+.plan-rows dt {
+  font-weight: 600;
+  color: var(--ink);
+}
+.plan-rows dd {
+  margin: 0;
+  color: var(--ink);
+}
+.plan-rows dd.plan-paid {
+  color: #606060;
+  font-size: 13px;
+  font-weight: 500;
+}
+.plan-rows dd.plan-note {
+  color: var(--muted);
+}
+.plan-link {
+  margin-top: 24px;
+  display: inline-flex;
+}
+.download-section--en {
+  background: #2563eb;
+}
+.download-actions > a.dl-pricing {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+@media (max-width: 700px) {
+  .plan-rows > div {
+    grid-template-columns: 1fr auto;
+    gap: 4px 16px;
+  }
+  .plan-rows dd.plan-note {
+    grid-column: 1 / -1;
+  }
+}
+.comparison-note {
+  color: var(--muted);
+}
+/* Brand designer 10/12: neutral grey #606060, tag outline #DBDBDB */
+.check-list svg,
+.comparison-note {
+  color: #606060;
+}
+.dictionary-row i {
+  background: transparent;
+  border: 1px solid #dbdbdb;
+  color: #606060;
 }
