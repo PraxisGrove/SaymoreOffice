@@ -50,14 +50,18 @@ def body(lang):
         b, n = re.subn(r"<h2>[^<]*</h2><p>[^<]*</p>", new, b)
     assert n == 1
     # Intro lede (approved 10/12); enforced here even if hifi lags behind
-    lede = ("用 macOS 听写或本地模型，想说多少说多少，免费，不需要 key。付一次钱，解锁润色和个人词典；润色要接你自己的云端 API key。" if zh else
-            "Dictate as much as you like with macOS Dictation or a local model. Free, no key needed. Pay once to unlock refinement and your personal dictionary; refinement runs on your own cloud API key.")
+    lede = ("用 macOS 听写或本地模型，想说多少说多少，免费，不需要 key。付一次钱，解锁润色；润色要接你自己的云端 API key。" if zh else
+            "Dictate as much as you like with macOS Dictation or a local model. Free, no key needed. Pay once to unlock refinement; refinement runs on your own cloud API key.")
     if zh:
         lede = lede.replace("云端 API key", "云端\u00a0API\u00a0key")  # keep together at 390
     b, n = re.subn(r'<p class="lede">[^<]*</p>', f'<p class="lede">{lede}</p>', b)
     assert n == 1
     # Drop the "unlimited dictation with your own key" row (implies a key is needed)
     b, n = re.subn(r'<tr><th scope="row">(Unlimited dictation with your own key|用自己的 key 不限次听写)</th>.*?</tr>', '', b)
+    assert n <= 1  # hifi may already have dropped it
+    # Personal dictionary is free: free column says Yes / 有
+    b, n = re.subn(r'(<th scope="row">(?:Personal dictionary|个人词典)[^<]*</th><td data-l="[^"]*">)[^<]*(</td>)',
+                   lambda m: m.group(1) + ("有" if zh else "Yes") + m.group(2), b)
     assert n == 1
     # Refinement row: it needs a cloud LLM key in the released app
     if zh:
