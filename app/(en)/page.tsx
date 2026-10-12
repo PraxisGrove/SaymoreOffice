@@ -64,7 +64,7 @@ const homeCss = `
 .home .h-feats{grid-template-columns:1fr;gap:28px;padding:56px 0}.home .fl{grid-template-columns:1fr;gap:24px}.home .h-end{padding:48px 0 64px}.home .h-end h2{font-size:26px}}
 `;
 
-const paid = new Set(["Refinement", "Personal dictionary"]);
+const paid = new Set(["Refinement"]);
 
 const features = [
   ["Works where you type", "Editors, browsers, chat apps and terminals. Text lands at your cursor."],

@@ -202,7 +202,6 @@ export default async function HomePage() {
             <div className="feature-icon">
               <Languages size={21} />
             </div>
-            <span className="paid-tag paid-tag--block">付费</span>
             <h2>让人名、产品名和技术术语保持正式写法。</h2>
             <p>
               词典可以手动添加、通过 CSV
