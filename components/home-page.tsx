@@ -21,7 +21,7 @@ import { RefinementComparison } from "@/components/refinement-comparison";
 import { ReleaseSummary } from "@/components/release-summary";
 import { SiteHeader } from "@/components/site-header";
 import { homeCopy, type Lang } from "@/data/home-copy";
-import { githubUrl, licenseUrl, pricingPlans, releaseUrl } from "@/data/site";
+import { githubUrl, licenseUrl, releaseUrl } from "@/data/site";
 import { getRecentReleases } from "@/lib/github";
 
 const flowIcons = [LockKeyhole, KeyRound, ShieldCheck];
@@ -188,48 +188,19 @@ export async function HomePage({ lang }: { lang: Lang }) {
             <h2>{t.pricing.title}</h2>
             <p>{t.pricing.text}</p>
           </div>
-          {t.pricing.rows ? (
-            <>
-              <dl className="plan-rows">
-                {t.pricing.rows.map(([name, state, note]) => (
-                  <div key={name}>
-                    <dt>{name}</dt>
-                    <dd className={state === "Free" ? undefined : "plan-paid"}>{state}</dd>
-                    <dd className="plan-note">{note}</dd>
-                  </div>
-                ))}
-              </dl>
-              <a className="text-link plan-link" href={t.pricing.link.href} data-placement="home_pricing">
-                {t.pricing.link.label}
-                <ArrowRight size={15} />
-              </a>
-            </>
-          ) : (
-            <div className="pricing-grid">
-              {pricingPlans.map((plan) => (
-                <article key={plan.name} className="pricing-card">
-                  <div className="pricing-card__head">
-                    <h3>{plan.name}</h3>
-                    <span>{plan.state}</span>
-                  </div>
-                  <strong className="pricing-status">价格待发布</strong>
-                  <p>{plan.description}</p>
-                  <ul>
-                    {plan.features.map((feature) => (
-                      <li key={feature}>
-                        <Check size={15} />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  <a href={plan.href} target="_blank" rel="noreferrer">
-                    {plan.action}
-                    <ArrowRight size={15} />
-                  </a>
-                </article>
-              ))}
-            </div>
-          )}
+          <dl className={`plan-rows plan-rows--${lang}`}>
+            {t.pricing.rows.map(([name, state, note]) => (
+              <div key={name}>
+                <dt>{name}</dt>
+                <dd className={state === t.pricing.free ? undefined : "plan-paid"}>{state}</dd>
+                <dd className="plan-note">{note}</dd>
+              </div>
+            ))}
+          </dl>
+          <a className="text-link plan-link" href={t.pricing.link.href} data-placement="home_pricing">
+            {t.pricing.link.label}
+            <ArrowRight size={15} />
+          </a>
         </div>
       </section>
 
@@ -281,7 +252,7 @@ export async function HomePage({ lang }: { lang: Lang }) {
         </div>
       </section>
 
-      <section id="download" className={`download-section${lang === "en" ? " download-section--en" : ""}`}>
+      <section id="download" className="download-section">
         <div className="page-width download-layout">
           <div>
             <Image src="/brand/saymore-icon.png" width={64} height={64} alt="" />
@@ -307,9 +278,9 @@ export async function HomePage({ lang }: { lang: Lang }) {
       <footer className="site-footer">
         <div className="page-width footer-grid">
           <div className="footer-brand">
-            <a href="#top">
-              <Image src="/brand/saymore-icon.png" width={42} height={42} alt="" />
-              <strong>Saymore</strong>
+            <a href="#top" aria-label={t.header.home}>
+              {/* biome-ignore lint/performance/noImgElement: SVG wordmark (small, no-bar version per usage.md) */}
+              <img src="/brand/saymore-wordmark-small-light.svg" width={103} height={28} alt="Saymore" />
             </a>
             <p>{t.footer.tagline}</p>
             <span>© 2026 PraxisGrove</span>

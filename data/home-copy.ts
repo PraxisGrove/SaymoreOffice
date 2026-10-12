@@ -1,6 +1,6 @@
 // Homepage copy, one entry per language. Structure lives in components/home-page.tsx.
-// Director 10/12: "macOS 13+", the 8-second timeout and "refreshes every hour" are removed
-// from home + pricing (EN and ZH) until verified against the app.
+// System requirements verified 10/12 (macOS 12+, Windows 10/11 x64). Director 10/12: the 8-second timeout and "refreshes every hour" are removed
+// stay off home + pricing (EN and ZH).
 import { githubUrl, releaseUrl } from "@/data/site";
 
 export type Lang = "en" | "zh";
@@ -50,7 +50,7 @@ const en = {
   overview: {
     kicker: "Local-first voice typing for the desktop",
     title: "Press a shortcut and talk. Saymore turns what you say into clean text, right where your cursor is.",
-    meta: ["Windows", "Rust + Slint", "PolyForm Shield"],
+    meta: ["macOS 12+", "Windows 10/11, 64-bit (x64)", "Rust + Slint", "PolyForm Shield"],
     secondary: { label: "See pricing", href: "/pricing", placement: "overview" },
   },
   speed: {
@@ -107,7 +107,8 @@ const en = {
       ["Dictation", "Free", "macOS Dictation or a local model. No key, no limit."],
       ["Personal dictionary", "Free", "Manual entries, CSV import, learning from your corrections."],
       ["Refinement", "Paid", "One-time purchase with a year of updates. Needs your own cloud API key."],
-    ] as [string, string, string][] | null,
+    ] as [string, string, string][],
+    free: "Free",
     link: { label: "See pricing and FAQ", href: "/pricing" },
   },
   platform: {
@@ -127,7 +128,7 @@ const en = {
   },
   download: {
     title: "Rest your hands. Keep your train of thought.",
-    text: "Saymore runs on macOS and Windows. Installers are on GitHub Releases. Dictation is free; refinement is a one-time purchase.",
+    text: "Saymore runs on macOS 12+ and Windows 10/11, 64-bit (x64). Installers are on GitHub Releases. Dictation is free; refinement is a one-time purchase.",
     pricing: { label: "Pricing", href: "/pricing" } as { label: string; href: string } | null,
     checksums: "Checksums",
   },
@@ -175,7 +176,7 @@ const zh: HomeCopy = {
   overview: {
     kicker: "本地优先的桌面语音输入工具",
     title: "按下快捷键自然说话，Saymore 负责识别、整理并写入你正在使用的应用。",
-    meta: ["Windows", "Rust + Slint", "PolyForm Shield"],
+    meta: ["macOS 12 及以上", "Windows 10/11，64 位（x64）", "Rust + Slint", "PolyForm Shield"],
     secondary: { label: "查看版本说明", href: releaseUrl, placement: "" },
   },
   speed: {
@@ -224,10 +225,15 @@ const zh: HomeCopy = {
     text: "词典可以手动添加、通过 CSV 导入，也可以从高可信纠正中自动学习。规范化只处理已确认词语的大小写与全角半角，不猜测语义别名。",
   },
   pricing: {
-    title: "从完全本地，到官方托管。",
-    text: "三条路径共享同一套听写体验。正式价格与云服务上线时间尚未发布，当前只展示已经确定的产品边界。",
-    rows: null, // zh keeps the plan cards (pricingPlans) for now
-    link: { label: "", href: "/zh/pricing" },
+    title: "听写免费，润色一次买断。",
+    text: "用 macOS 听写或本地模型，不需要 key。付一次钱，解锁润色（要接你自己的云端\u00a0API\u00a0key）。",
+    rows: [
+      ["听写", "免费", "macOS 听写或本地模型。不需要 key，不限次\u2060数。"],
+      ["个人词典", "免费", "手动添加、CSV 导入，也能从你的纠正中学习。"],
+      ["润色", "付费，需要接你自己的云端\u00a0API\u00a0key", "一次买断，含一年更新。"],
+    ],
+    free: "免费",
+    link: { label: "查看定价和常见问题", href: "/zh/pricing" },
   },
   platform: {
     title: "在兼容的文本输入场景中，把听写结果写到光标位置。",
@@ -241,12 +247,12 @@ const zh: HomeCopy = {
   },
   changelog: {
     title: "持续发布，变更可以追溯。",
-    text: "版本、安装包与校验和均来自 GitHub Releases。",
+    text: "版本、安装包与校验和均来自 GitHub\u00a0Releases。",
     all: "查看全部更新",
   },
   download: {
     title: "让手指休息，让想法继续。",
-    text: "Saymore 支持 macOS 与 Windows。当前安装包通过 GitHub Releases 分发。",
+    text: "Saymore 支持 macOS 12 及以上与 Windows 10/11，64 位（x64）。当前安装包通过 GitHub Releases 分发。",
     pricing: null,
     checksums: "查看校验和",
   },

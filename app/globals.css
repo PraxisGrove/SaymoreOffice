@@ -2620,7 +2620,7 @@ main > section:not(.hero) {
   display: flex;
   align-items: center;
   padding: clamp(72px, 10dvh, 120px) 0;
-  background: var(--primary-strong);
+  background: #2563eb;
   color: white;
 }
 .download-layout {
@@ -3870,9 +3870,7 @@ main > section:not(.hero) {
   margin-top: 24px;
   display: inline-flex;
 }
-.download-section--en {
-  background: #2563eb;
-}
+
 .download-actions > a.dl-pricing {
   display: flex;
   align-items: center;
@@ -3901,4 +3899,22 @@ main > section:not(.hero) {
   background: transparent;
   border: 1px solid #dbdbdb;
   color: #606060;
+}
+.dictionary-row i {
+  justify-self: start;
+  width: max-content;
+}
+.footer-brand img {
+  border-radius: 0;
+  height: 28px;
+  width: auto;
+}
+.plan-rows--zh > div {
+  grid-template-columns: 160px 300px 1fr;
+}
+@media (max-width: 700px) {
+  .plan-rows--zh > div {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
 }
