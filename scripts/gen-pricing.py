@@ -86,10 +86,15 @@ def body(lang):
     b, n = re.subn(r" macOS <span data-ph>13</span> or later, and Windows", " Windows", b)
     b, n2 = re.subn(r"；需要 macOS <span data-ph>13</span> 及以上；", "；", b)
     assert n + n2 <= 1  # hifi dropped it on 10/12
-    # Director 10/12: OS line says just "Windows" (no bitness / version) until verified
-    b, n = re.subn(r"Windows, 64-bit\.", "Windows.", b)
-    b, n2 = re.subn(r"Windows 64 位。", "Windows。", b)
-    assert n + n2 == 1
+    # System requirements (verified 10/12 against app v0.2.0: Cargo.toml:19 macOS 12.0;
+    # app.manifest:12 Windows 10/11; release.yaml:279 + .cargo/config.toml:1 x86_64-pc-windows-msvc only)
+    if zh:
+        b, n = re.subn(r"<p>macOS，一个通用安装包同时支持 Intel 和 Apple Silicon；Windows[^<]*</p>",
+                       "<p>macOS 12 及以上，一个通用安装包同时支持 Intel 和 Apple Silicon；<span class=\"nw\">Windows 10/11，64 位（x64）</span>。</p>", b)
+    else:
+        b, n = re.subn(r"<p>macOS, as one universal app for Intel and Apple Silicon, and Windows[^<]*</p>",
+                       "<p>macOS 12+, as one universal app for Intel and Apple Silicon, and Windows 10/11, 64-bit (x64).</p>", b)
+    assert n == 1
     # Analytics placements (decorated with ?channel=&placement= at runtime by SiteAnalytics)
     b, n = re.subn(r'<a class="btn" href="(https://github.com/PraxisGrove/Saymore/releases/latest)"', r'<a class="btn" href="\1" data-placement="pricing_cta"', b)
     assert n == 1
