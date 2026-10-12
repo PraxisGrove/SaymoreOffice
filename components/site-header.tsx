@@ -12,6 +12,19 @@ export function SiteHeader({ lang = "zh" }: { lang?: Lang }) {
   const [hidden, setHidden] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  // ESC closes the mobile menu and returns focus to the menu button.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setMenuOpen(false);
+      menuButtonRef.current?.focus();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [menuOpen]);
 
   useEffect(() => {
     const HIDE_AFTER = 48; // px of continuous downward scroll before hiding
@@ -119,6 +132,7 @@ export function SiteHeader({ lang = "zh" }: { lang?: Lang }) {
         </div>
 
         <button
+          ref={menuButtonRef}
           className="mobile-menu-button"
           type="button"
           aria-expanded={menuOpen}
