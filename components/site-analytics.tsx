@@ -2,28 +2,25 @@
 
 import { usePathname } from "next/navigation";
 import Script from "next/script";
-import { useEffect, useState } from "react";
-import { CONSENT_EVENT, CookieConsent, hasConsent } from "@/components/cookie-consent";
+import { useEffect } from "react";
 import { currentChannel, referrerDomain } from "@/lib/channel";
 
-// Google Analytics 4. Nothing loads unless NEXT_PUBLIC_GA_ID is set.
-// gtag.js is only loaded after the user accepts (or a stored "granted" choice). Before that: zero requests
-// to Google, no _ga cookie. Events fired before the script has loaded are dropped, not queued.
-export const GA_ID = process.env.NEXT_PUBLIC_GA_ID || "";
+// Umami Cloud. Nothing loads unless NEXT_PUBLIC_UMAMI_WEBSITE_ID is set.
+// Auto-tracking is off: page_view / pricing_view / download_click are sent by us via umami.track.
+// Events fired before the script has loaded are dropped (not queued).
+export const UMAMI_ID = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID || "";
+const UMAMI_SRC = "https://cloud.umami.is/script.js";
 
 type Props = Record<string, string>;
 declare global {
   interface Window {
-    dataLayer?: unknown[];
-    gtag?: (...args: unknown[]) => void;
+    umami?: { track: (event: string, data?: Record<string, string>) => void };
   }
 }
 
-let gaReady = false;
-
 function track(event: string, props: Props) {
-  if (!GA_ID || !gaReady || !window.gtag) return;
-  window.gtag("event", event, props);
+  if (!UMAMI_ID || !window.umami) return;
+  window.umami.track(event, props);
 }
 
 const isDownload = (url: URL) =>
@@ -60,14 +57,6 @@ function detectOs() {
   return "other";
 }
 
-// Only rendered after consent. Consent Mode v2 default denied, then granted (analytics only) + config without auto page_view.
-const bootstrap = (id: string) => `
-window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}window.gtag=gtag;
-gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500});
-gtag('consent','update',{analytics_storage:'granted'});
-gtag('js',new Date());gtag('config',${JSON.stringify(id)},{send_page_view:false});
-`;
-
 function pageEvents(pathname: string) {
   const channel = currentChannel();
   const utm: Props = {};
@@ -78,16 +67,6 @@ function pageEvents(pathname: string) {
 
 export function SiteAnalytics() {
   const pathname = usePathname();
-  const [consent, setConsent] = useState(false);
-
-  useEffect(() => {
-    if (!GA_ID) return;
-    setConsent(hasConsent());
-    const on = () => setConsent(hasConsent());
-    window.addEventListener(CONSENT_EVENT, on);
-    return () => window.removeEventListener(CONSENT_EVENT, on);
-  }, []);
-
   useEffect(() => {
     decorateLinks(currentChannel());
     pageEvents(pathname);
@@ -111,21 +90,14 @@ export function SiteAnalytics() {
     return () => document.removeEventListener("click", onClick, true);
   }, []);
 
-  if (!GA_ID) return null;
-  if (!consent) return <CookieConsent />;
+  if (!UMAMI_ID) return null;
   return (
-    <>
-      <Script id="ga-bootstrap" strategy="afterInteractive">
-        {bootstrap(GA_ID)}
-      </Script>
-      <Script
-        src={`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(GA_ID)}`}
-        strategy="afterInteractive"
-        onLoad={() => {
-          gaReady = true;
-          pageEvents(location.pathname);
-        }}
-      />
-    </>
+    <Script
+      src={UMAMI_SRC}
+      data-website-id={UMAMI_ID}
+      data-auto-track="false"
+      strategy="afterInteractive"
+      onLoad={() => pageEvents(location.pathname)}
+    />
   );
 }
