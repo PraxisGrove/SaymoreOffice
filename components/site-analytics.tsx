@@ -9,7 +9,8 @@ import { currentChannel, referrerDomain } from "@/lib/channel";
 // Auto-tracking is off: page_view / pricing_view / download_click are sent by us via umami.track.
 // Events fired before the script has loaded are dropped (not queued).
 export const UMAMI_ID = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID || "";
-const UMAMI_SRC = "https://cloud.umami.is/script.js";
+// Same-origin proxy via vercel.json rewrites: /stats/script.js and /stats/api/send -> cloud.umami.is
+const UMAMI_SRC = "/stats/script.js";
 
 type Props = Record<string, string>;
 declare global {
@@ -95,6 +96,7 @@ export function SiteAnalytics() {
     <Script
       src={UMAMI_SRC}
       data-website-id={UMAMI_ID}
+      data-host-url="/stats"
       data-auto-track="false"
       strategy="afterInteractive"
       onLoad={() => pageEvents(location.pathname)}
