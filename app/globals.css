@@ -3805,3 +3805,9 @@ main > section:not(.hero) {
   display: block;
   margin: 0 0 8px;
 }
+/* Keyboard users: a focused element inside the header always shows it. */
+.site-header:focus-within {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
