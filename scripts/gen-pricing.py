@@ -82,6 +82,19 @@ def body(lang):
     # hidden until wired + verified
     b = b.replace('<div class="providers">', '<div class="providers off">')
     b = b.replace('class="rate" data-ph', 'class="rate off" data-ph')
+    # Director 10/12: drop the "macOS 13+" claim on home + pricing (min version still being verified)
+    b, n = re.subn(r" macOS <span data-ph>13</span> or later, and Windows", " Windows", b)
+    b, n2 = re.subn(r"；需要 macOS <span data-ph>13</span> 及以上；", "；", b)
+    assert n + n2 <= 1  # hifi dropped it on 10/12
+    # Director 10/12: OS line says just "Windows" (no bitness / version) until verified
+    b, n = re.subn(r"Windows, 64-bit\.", "Windows.", b)
+    b, n2 = re.subn(r"Windows 64 位。", "Windows。", b)
+    assert n + n2 == 1
+    # Analytics placements (decorated with ?channel=&placement= at runtime by SiteAnalytics)
+    b, n = re.subn(r'<a class="btn" href="(https://github.com/PraxisGrove/Saymore/releases/latest)"', r'<a class="btn" href="\1" data-placement="pricing_cta"', b)
+    assert n == 1
+    b, n = re.subn(r'<a href="/api/download">', '<a href="/api/download" data-placement="pricing_header">', b)
+    assert n == 1
     return b
 css = (src / "pricing.css").read_text()
 # scope globals to .pricing-page so the homepage CSS is untouched
