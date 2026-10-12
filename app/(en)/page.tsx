@@ -5,17 +5,17 @@ import { og, pageSeo, twitter } from "@/lib/seo";
 export const metadata: Metadata = {
   title: { absolute: "Saymore — Speak instead of type" },
   description:
-    "Press a shortcut, talk, and Saymore types clean text at your cursor in any app on macOS and Windows. Bring your own API key.",
+    "Press a shortcut and talk. Saymore turns your speech into clean text at your cursor, in the app you’re already using, on macOS and Windows. Dictation is free, no key needed.",
   alternates: pageSeo("en", "/", "/zh").alternates,
   openGraph: og(
     "/",
     "Saymore — Speak instead of type",
-    "Press a shortcut, talk, and Saymore types clean text at your cursor in any app on macOS and Windows.",
+    "Press a shortcut and talk. Saymore turns your speech into clean text at your cursor, in the app you’re already using, on macOS and Windows. Dictation is free, no key needed.",
     "en_US",
   ),
   twitter: twitter(
     "Saymore — Speak instead of type",
-    "Press a shortcut, talk, and Saymore types clean text at your cursor in any app on macOS and Windows.",
+    "Press a shortcut and talk. Saymore turns your speech into clean text at your cursor, in the app you’re already using, on macOS and Windows. Dictation is free, no key needed.",
   ),
 };
 
