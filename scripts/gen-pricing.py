@@ -95,6 +95,10 @@ def body(lang):
         b, n = re.subn(r"<p>macOS, as one universal app for Intel and Apple Silicon, and Windows[^<]*</p>",
                        "<p>macOS 12+, as one universal app for Intel and Apple Silicon, and Windows 10/11, 64-bit (x64).</p>", b)
     assert n == 1
+    # ZH title (10/12): each half kept on one line
+    if zh:
+        b, n = re.subn(r"<h1>.*?</h1>", '<h1><span class="nw">听写和词典免费，</span><span class="nw">润色一次买断。</span></h1>', b, count=1)
+        assert n == 1
     # Analytics placements (decorated with ?channel=&placement= at runtime by SiteAnalytics)
     b, n = re.subn(r'<a class="btn" href="(https://github.com/PraxisGrove/Saymore/releases/latest)"', r'<a class="btn" href="\1" data-placement="pricing_cta"', b)
     assert n == 1
