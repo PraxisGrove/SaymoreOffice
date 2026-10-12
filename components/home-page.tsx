@@ -27,6 +27,22 @@ import { getRecentReleases } from "@/lib/github";
 const flowIcons = [LockKeyhole, KeyRound, ShieldCheck];
 const platformIcons = [Code2, Globe2, MessageSquareText, TerminalSquare];
 
+/** Wraps each listed phrase in <span class="nw"> so it never breaks across lines. */
+function withNowrap(text: string, phrases: readonly string[]) {
+  if (!phrases.length) return text;
+  const re = new RegExp(`(${phrases.map((p) => p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`);
+  return text.split(re).map((part, i) =>
+    phrases.includes(part) ? (
+      // biome-ignore lint/suspicious/noArrayIndexKey: static split of a constant string
+      <span className="nw" key={i}>
+        {part}
+      </span>
+    ) : (
+      part
+    ),
+  );
+}
+
 /** One homepage for both languages; only the copy (data/home-copy.ts) differs. */
 export async function HomePage({ lang }: { lang: Lang }) {
   const t = homeCopy[lang];
@@ -257,7 +273,7 @@ export async function HomePage({ lang }: { lang: Lang }) {
           <div>
             <Image src="/brand/saymore-icon.png" width={64} height={64} alt="" />
             <h2>{t.download.title}</h2>
-            <p>{t.download.text}</p>
+            <p>{withNowrap(t.download.text, t.download.nowrap)}</p>
           </div>
           <div className="download-actions">
             <DownloadButton inverse lang={lang} placement="download_section" />

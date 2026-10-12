@@ -3918,3 +3918,6 @@ main > section:not(.hero) {
     gap: 4px;
   }
 }
+.nw {
+  white-space: nowrap;
+}

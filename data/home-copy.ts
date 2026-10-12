@@ -129,6 +129,7 @@ const en = {
   download: {
     title: "Rest your hands. Keep your train of thought.",
     text: "Saymore runs on macOS 12+ and Windows 10/11, 64-bit (x64). Installers are on GitHub Releases. Dictation is free; refinement is a one-time purchase.",
+    nowrap: ["GitHub Releases", "macOS 12+", "Windows 10/11"],
     pricing: { label: "Pricing", href: "/pricing" } as { label: string; href: string } | null,
     checksums: "Checksums",
   },
@@ -253,6 +254,7 @@ const zh: HomeCopy = {
   download: {
     title: "让手指休息，让想法继续。",
     text: "Saymore 支持 macOS 12 及以上与 Windows 10/11，64 位（x64）。当前安装包通过 GitHub Releases 分发。",
+    nowrap: ["macOS 12 及以上", "Windows 10/11", "通过 GitHub Releases"],
     pricing: null,
     checksums: "查看校验和",
   },
