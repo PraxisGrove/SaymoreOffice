@@ -3,32 +3,24 @@
 import { usePathname } from "next/navigation";
 import Script from "next/script";
 import { useEffect } from "react";
+import { CookieConsent } from "@/components/cookie-consent";
 import { currentChannel, referrerDomain } from "@/lib/channel";
 
-// Plausible (hosted) via same-origin Vercel rewrites in vercel.json.
-// Off unless NEXT_PUBLIC_PLAUSIBLE_ENABLED=1 (account not registered yet).
-const ENABLED = process.env.NEXT_PUBLIC_PLAUSIBLE_ENABLED === "1";
-const DOMAIN = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN || "saymore.praxisgrove.org";
+// Google Analytics 4. Nothing loads unless NEXT_PUBLIC_GA_ID is set.
+// Consent Mode v2: everything denied by default until the user accepts (see cookie-consent.tsx).
+export const GA_ID = process.env.NEXT_PUBLIC_GA_ID || "";
 
 type Props = Record<string, string>;
-type PlausibleFn = ((event: string, options?: { props?: Props; u?: string }) => void) & { q?: unknown[] };
 declare global {
   interface Window {
-    plausible?: PlausibleFn;
+    dataLayer?: unknown[];
+    gtag?: (...args: unknown[]) => void;
   }
 }
 
 function track(event: string, props: Props) {
-  if (!ENABLED) return;
-  if (!window.plausible) {
-    const queue: unknown[] = [];
-    const stub = ((...args: unknown[]) => {
-      queue.push(args);
-    }) as PlausibleFn;
-    stub.q = queue;
-    window.plausible = stub;
-  }
-  window.plausible(event, { props });
+  if (!GA_ID || !window.gtag) return;
+  window.gtag("event", event, props);
 }
 
 const isDownload = (url: URL) =>
@@ -65,6 +57,14 @@ function detectOs() {
   if (ua.includes("mac os")) return "macos";
   return "other";
 }
+
+// Runs before gtag.js: queue + Consent Mode v2 defaults (all denied) + config without auto page_view.
+const bootstrap = (id: string) => `
+window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}window.gtag=gtag;
+gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500});
+try{if(localStorage.getItem('saymore_consent')==='granted'){gtag('consent','update',{analytics_storage:'granted'});}}catch(e){}
+gtag('js',new Date());gtag('config',${JSON.stringify(id)},{send_page_view:false});
+`;
 
 export function SiteAnalytics() {
   const pathname = usePathname();
@@ -103,13 +103,17 @@ export function SiteAnalytics() {
     return () => document.removeEventListener("click", onClick, true);
   }, []);
 
-  if (!ENABLED) return null;
+  if (!GA_ID) return null;
   return (
-    <Script
-      src="/stats/js/script.manual.js"
-      data-domain={DOMAIN}
-      data-api="/stats/api/event"
-      strategy="afterInteractive"
-    />
+    <>
+      <Script id="ga-consent-default" strategy="afterInteractive">
+        {bootstrap(GA_ID)}
+      </Script>
+      <Script
+        src={`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(GA_ID)}`}
+        strategy="afterInteractive"
+      />
+      <CookieConsent />
+    </>
   );
 }
