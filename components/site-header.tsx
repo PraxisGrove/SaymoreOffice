@@ -1,7 +1,6 @@
 "use client";
 
 import { Menu, X } from "lucide-react";
-import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { DownloadButton } from "@/components/download-button";
 import { navItems } from "@/data/site";
@@ -32,8 +31,8 @@ export function SiteHeader() {
     <header className={`site-header ${pastHero ? "site-header--ready" : ""} ${visible ? "site-header--visible" : ""}`}>
       <div className="site-header__inner">
         <a className="brand-link" href="#top" aria-label="返回 Saymore 首页">
-          <Image src="/brand/saymore-icon.png" width={30} height={30} alt="" priority />
-          <span>Saymore</span>
+          {/* biome-ignore lint/performance/noImgElement: SVG wordmark (no-bar small version per usage.md) */}
+          <img src="/brand/saymore-wordmark-small-light.svg" width={103} height={28} alt="Saymore" />
         </a>
 
         <nav className="desktop-nav" aria-label="主要导航">

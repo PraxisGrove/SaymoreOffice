@@ -3,7 +3,9 @@
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
-const comparisons = [
+type Comparison = { title: string; before: string; after: string; note: string };
+
+const zhComparisons: Comparison[] = [
   {
     title: "去掉填充词，保留语气",
     before: "那个，我觉得这个方案可能，嗯，还需要再讨论一下，不是说不能做。",
@@ -24,7 +26,15 @@ const comparisons = [
   },
 ];
 
-export function RefinementComparison() {
+const zhLabels = { prev: "上一个例子", next: "下一个例子", before: "识别原文", after: "保守精炼" };
+
+export function RefinementComparison({
+  comparisons = zhComparisons,
+  labels = zhLabels,
+}: {
+  comparisons?: Comparison[];
+  labels?: typeof zhLabels;
+} = {}) {
   const [index, setIndex] = useState(0);
   const item = comparisons[index];
 
@@ -35,7 +45,7 @@ export function RefinementComparison() {
         <div>
           <button
             type="button"
-            aria-label="上一个例子"
+            aria-label={labels.prev}
             onClick={() => setIndex((index - 1 + comparisons.length) % comparisons.length)}
           >
             <ChevronLeft size={18} />
@@ -43,20 +53,20 @@ export function RefinementComparison() {
           <span>
             {index + 1} / {comparisons.length}
           </span>
-          <button type="button" aria-label="下一个例子" onClick={() => setIndex((index + 1) % comparisons.length)}>
+          <button type="button" aria-label={labels.next} onClick={() => setIndex((index + 1) % comparisons.length)}>
             <ChevronRight size={18} />
           </button>
         </div>
       </div>
       <div className="comparison-columns">
         <section>
-          <span className="comparison-label">识别原文</span>
+          <span className="comparison-label">{labels.before}</span>
           <p>{item.before}</p>
         </section>
         <section className="comparison-after">
           <span className="comparison-label">
             <Check size={14} />
-            保守精炼
+            {labels.after}
           </span>
           <p>{item.after}</p>
         </section>
