@@ -20,14 +20,17 @@
       ]
     }
   ],
-  "rewrites": [
+  "redirects": [
     {
-      "source": "/stats/js/script.manual.js",
-      "destination": "https://plausible.io/js/script.manual.js"
-    },
-    {
-      "source": "/stats/api/event",
-      "destination": "https://plausible.io/api/event"
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "saymore-office.vercel.app"
+        }
+      ],
+      "destination": "https://saymore.praxisgrove.org/:path*",
+      "permanent": true
     }
   ]
 }
