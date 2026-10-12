@@ -5,12 +5,22 @@ import { useEffect, useState } from "react";
 // Placeholder consent bar (unstyled). Final design comes from the brand designer.
 // Public API: acceptAnalytics() / declineAnalytics(); the choice is kept in localStorage.
 const KEY = "saymore_consent";
+export const CONSENT_EVENT = "saymore:consent";
+
+export function hasConsent() {
+  try {
+    return localStorage.getItem(KEY) === "granted";
+  } catch {
+    return false;
+  }
+}
 
 function update(state: "granted" | "denied") {
   try {
     localStorage.setItem(KEY, state);
   } catch {}
-  window.gtag?.("consent", "update", { analytics_storage: state });
+  if (state === "denied") window.gtag?.("consent", "update", { analytics_storage: "denied" });
+  window.dispatchEvent(new Event(CONSENT_EVENT));
 }
 
 export function acceptAnalytics() {
