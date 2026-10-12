@@ -3921,3 +3921,9 @@ main > section:not(.hero) {
 .nw {
   white-space: nowrap;
 }
+/* Keyboard users: a focused element inside the header always shows it. */
+.site-header:focus-within {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
